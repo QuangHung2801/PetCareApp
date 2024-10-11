@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Bảng tin'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Khám phá'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Dịch vụ'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Thông báo'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Mua sắm'),
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),
         ],
         currentIndex: _selectedIndex,

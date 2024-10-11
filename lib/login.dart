@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'register.dart';
 void main() {
   runApp(MyApp());
 }
@@ -103,7 +103,10 @@ class LoginScreen extends StatelessWidget {
                   Text('Bạn chưa có tài khoản?'),
                   TextButton(
                     onPressed: () {
-
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => RegisterScreen()),
+                      );
                     },
                     child: Text('Đăng ký'),
                   ),

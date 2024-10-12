@@ -7,7 +7,8 @@ class RegisterScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Đăng ký'),
       ),
-      body: Padding(
+        body: SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Column(
@@ -75,6 +76,7 @@ class RegisterScreen extends StatelessWidget {
           ),
         ),
       ),
+        ),
     );
   }
 }

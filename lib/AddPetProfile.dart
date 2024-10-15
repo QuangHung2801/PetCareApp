@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'AddPetPage.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -44,9 +46,6 @@ class AddPetProfilePage extends StatelessWidget {
               width: 200,// Đặt kích thước cho logo
             ),
             SizedBox(height: 20),
-            // Hình ảnh minh họa (thay thế URL hình ảnh bằng hình ảnh của bạn)
-
-            SizedBox(height: 20),
             // Tiêu đề
             Text(
               'Thêm Profile thú cưng',
@@ -70,7 +69,11 @@ class AddPetProfilePage extends StatelessWidget {
             // Nút "Thêm Profile thú cưng"
             ElevatedButton(
               onPressed: () {
-                // Điều hướng đến trang thêm Profile thú cưng
+                // Điều hướng đến trang thêm thú cưng mới
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddPetPage()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'AddPetProfile.dart';
+import '../PetProfile/AddPetProfile.dart';
 
 void main() {
   runApp(MyApp());

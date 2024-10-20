@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'PetProfile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,14 +56,30 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start, // Đẩy các widget lên phía trên
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            const SizedBox(height: 20), // Khoảng cách giữa AppBar và nút
+            SizedBox(
+              width: 130, // Chiều rộng hình vuông
+              height: 140, // Chiều cao hình vuông
+              child: ElevatedButton(
+                onPressed: () {
+                  // Dẫn đến màn hình PetHealthScreen khi bấm nút
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PetHealthScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), // Bo góc nhẹ
+                  ),
+                ),
+                child: const Text('Sổ sức khỏe'),
+              ),
             ),
           ],
         ),
@@ -74,10 +91,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Bảng tin'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Cộng đồng'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Khám phá'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Dịch vụ'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Mua sắm'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Thú cưng'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Dịch vụ'),
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),
         ],
         currentIndex: _selectedIndex,

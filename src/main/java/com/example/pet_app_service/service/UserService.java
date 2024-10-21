@@ -23,12 +23,12 @@ public class UserService {
         return userRepository.save(user);
     }
 //fix
-    public User login(String phone, String password) {
-        User user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        if (!user.getPassword().equals(password)) {
-            throw new RuntimeException("Mật khẩu không đúng");
-        }
-        return user;
+public User login(String phone, String password) {
+    User user = userRepository.findByPhone(phone)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+    if (!passwordEncoder.matches(password, user.getPassword())) {
+        throw new RuntimeException("Mật khẩu không đúng");
     }
+    return user;
+}
 }

@@ -12,17 +12,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: HomePage(),
+      home: HomePageSociety(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
+class HomePageSociety extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePageSociety> {
   int _selectedIndex = 0;
 
   static List<Widget> _widgetOptions = <Widget>[
@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                 TextButton(
                   onPressed: () => _onItemTapped(1),
                   child: Text(
-                    'For you',
+                    'Dành cho bạn',
                     style: TextStyle(
                       color: _selectedIndex == 1 ? Colors.orange : Colors.black, // Đổi màu khi chọn
                     ),
@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                 TextButton(
                   onPressed: () => _onItemTapped(0),
                   child: Text(
-                    'Following',
+                    'Theo dõi',
                     style: TextStyle(
                       color: _selectedIndex == 0 ? Colors.orange : Colors.black, // Đổi màu khi chọn
                       fontWeight: _selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                 TextButton(
                   onPressed: () => _onItemTapped(2),
                   child: Text(
-                    'Clubs',
+                    'Hội nhóm',
                     style: TextStyle(
                       color: _selectedIndex == 2 ? Colors.orange : Colors.black, // Đổi màu khi chọn
                     ),

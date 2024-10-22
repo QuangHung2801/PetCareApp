@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'View/ Social/Following.dart';
+import 'Navbar.dart';
+import 'View/ Social/discover.dart';
+import 'View/Menu/Menu.dart';
+import 'View/Service/PetServicesPage.dart';
+import 'View/PetProfile/PetProfile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +21,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: '',),
+      debugShowCheckedModeBanner: false,
+      home: const MyHomePage(title: 'home',),
     );
   }
 }
@@ -31,7 +38,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  int _selectedIndex = 0; // Chỉ số hiện tại của BottomNavigationBar
+  int _selectedIndex = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -39,53 +46,34 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  final List<Widget> _pages = [
+    HomePageSociety(),
+    ExplorePage(),
+    PetHealthScreen(),
+    PetServicesPage(),
+    HomePage(),
+  ];
+
   // Hàm xử lý sự kiện khi chọn mục từ BottomNavigationBar
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index >= 0 && index < _pages.length) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Bảng tin'),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Khám phá'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Dịch vụ'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Thông báo'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),
-        ],
+      // appBar: AppBar(
+      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      //   title: Text(widget.title),
+      // ),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: CustomBottomNavigationBar( // Gọi widget ở đây
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.orange,  // Màu khi được chọn
-        unselectedItemColor: Colors.black, // Màu đen cho icon chưa chọn
-        selectedLabelStyle: const TextStyle(color: Colors.black),  // Màu chữ khi được chọn
-        unselectedLabelStyle: const TextStyle(color: Colors.black), // Màu chữ chưa chọn
-        onTap: _onItemTapped,
+        onItemTapped: _onItemTapped,
       ),
     );
   }

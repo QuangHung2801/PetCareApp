@@ -37,7 +37,7 @@ class ExplorePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network('https://example.com/dog_image.jpg'),  // Thay bằng URL ảnh thực
+                // Image.network('banner4.jpg'),  // Thay bằng URL ảnh thực
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -74,7 +74,7 @@ class UserRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundImage: NetworkImage('https://example.com/avatar_image.jpg'),  // Thay bằng URL ảnh thực
+            // backgroundImage: NetworkImage('https://example.com/avatar_image.jpg'),  // Thay bằng URL ảnh thực
           ),
           SizedBox(width: 16),
           Expanded(child: Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),

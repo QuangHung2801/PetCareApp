@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../Navbar.dart';
+import '../../main.dart';
+import 'Forgotpassword.dart';
 import 'register.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,6 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
+      debugShowCheckedModeBanner: false,
       home: LoginScreen(),
     );
   }
@@ -42,7 +45,7 @@ class LoginScreen extends StatelessWidget {
       // Có thể thêm điều hướng vào màn hình chính ở đây
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MyHomePage(title: 'Flutter Demo Home Page')), // Thay NavbarScreen bằng tên màn hình navbar của bạn
+        MaterialPageRoute(builder: (context) => MyHomePage(title: 'home')), // Thay NavbarScreen bằng tên màn hình navbar của bạn
       );
     } else {
       print('Login failed: ${response.body}');
@@ -96,7 +99,12 @@ class LoginScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                    );
+                  },
                   child: Text('Quên mật khẩu?'),
                 ),
                 SizedBox(height: 20),

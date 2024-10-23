@@ -127,7 +127,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AdoptPetsScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),

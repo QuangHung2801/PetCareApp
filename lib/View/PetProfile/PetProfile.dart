@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ungdungchamsocthucung/View/PetProfile/vaccine.dart';
+
+import 'ExternalParasites.dart';
+import 'Parasite.dart';
+import 'medicalHistory.dart';
 
 void main() => runApp(MyApp());
 
@@ -38,12 +43,12 @@ class PetHealthScreen extends StatelessWidget {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
               children: [
-                _buildGridItem('Nội ký sinh', Icons.bug_report),
-                _buildGridItem('Ngoại ký sinh', Icons.bug_report_outlined),
-                _buildGridItem('Tiêm phòng Vaccine', Icons.vaccines),
-                _buildGridItem('Điều trị và phẫu thuật', Icons.local_hospital),
-                _buildGridItem('Lịch sử điều trị bệnh', Icons.history),
-                _buildGridItem('Thông tin thú cưng', Icons.pets),
+                _buildGridItem('Nội ký sinh', Icons.bug_report ,context, NoiKySinhScreen()),
+                _buildGridItem('Ngoại ký sinh', Icons.bug_report_outlined ,context, NgoaiKySinhScreen()),
+                _buildGridItem('Tiêm phòng Vaccine', Icons.vaccines,context, TiemPhongVaccineScreen()),
+                _buildGridItem('Điều trị và phẫu thuật', Icons.local_hospital,context, NoiKySinhScreen()),
+                _buildGridItem('Lịch sử điều trị bệnh', Icons.history,context, LichSuTriBenhScreen()),
+                _buildGridItem('Thông tin thú cưng', Icons.pets,context, NoiKySinhScreen()),
               ],
             ),
           ),
@@ -52,23 +57,31 @@ class PetHealthScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGridItem(String title, IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.orange,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 40.0, color: Colors.white),
-          SizedBox(height: 10.0),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 16.0),
-          ),
-        ],
+  Widget _buildGridItem(String title, IconData icon, BuildContext context, Widget destinationScreen) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => destinationScreen),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40.0, color: Colors.white),
+            SizedBox(height: 10.0),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 16.0),
+            ),
+          ],
+        ),
       ),
     );
   }

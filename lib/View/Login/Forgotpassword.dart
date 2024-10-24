@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -22,6 +23,45 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  Future<void> sendResetLink() async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8888/api/password-reset/request'),
+      body: {'email': _emailController.text},
+    );
+
+    if (response.statusCode == 200) {
+      // Hiển thị thông báo thành công
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Thành công'),
+          content: Text('Một đường link khôi phục mật khẩu đã được gửi tới email của bạn.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Xử lý lỗi
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Lỗi'),
+          content: Text('Không thể gửi email khôi phục mật khẩu.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,20 +116,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Xử lý logic gửi email ở đây
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('thành công'),
-                          content: Text('một đường link đã được gửi tới địa chỉ của bạn.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
+                      // Gọi phương thức gửi đường link khôi phục mật khẩu
+                      sendResetLink();
                     }
                   },
                   style: ElevatedButton.styleFrom(

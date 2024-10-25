@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ungdungchamsocthucung/View/PetProfile/vaccine.dart';
 
 import 'ExternalParasites.dart';
+import 'MedicalRecord.dart';
 import 'Parasite.dart';
 import 'medicalHistory.dart';
 
@@ -43,12 +44,12 @@ class PetHealthScreen extends StatelessWidget {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
               children: [
-                _buildGridItem('Nội ký sinh', Icons.bug_report ,context, NoiKySinhScreen()),
-                _buildGridItem('Ngoại ký sinh', Icons.bug_report_outlined ,context, NgoaiKySinhScreen()),
-                _buildGridItem('Tiêm phòng Vaccine', Icons.vaccines,context, TiemPhongVaccineScreen()),
-                _buildGridItem('Điều trị và phẫu thuật', Icons.local_hospital,context, NoiKySinhScreen()),
-                _buildGridItem('Lịch sử điều trị bệnh', Icons.history,context, LichSuTriBenhScreen()),
-                _buildGridItem('Thông tin thú cưng', Icons.pets,context, NoiKySinhScreen()),
+                _buildGridItem('Nội ký sinh', Icons.bug_report, context, NoiKySinhScreen(), Colors.red),
+                _buildGridItem('Ngoại ký sinh', Icons.bug_report_outlined, context, NgoaiKySinhScreen(), Colors.green),
+                _buildGridItem('Tiêm phòng Vaccine', Icons.vaccines, context, TiemPhongVaccineScreen(), Colors.blue),
+                _buildGridItem('Điều trị và phẫu thuật', Icons.local_hospital, context, GiaiPhauScreen(), Colors.purple),
+                _buildGridItem('Lịch sử điều trị bệnh', Icons.history, context, LichSuTriBenhScreen(), Colors.orange),
+                _buildGridItem('Thông tin thú cưng', Icons.pets, context, NoiKySinhScreen(), Colors.teal),
               ],
             ),
           ),
@@ -57,7 +58,8 @@ class PetHealthScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGridItem(String title, IconData icon, BuildContext context, Widget destinationScreen) {
+  // Hàm tạo một mục lưới (grid item) với màu tùy chỉnh
+  Widget _buildGridItem(String title, IconData icon, BuildContext context, Widget destinationScreen, Color color) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -67,7 +69,7 @@ class PetHealthScreen extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.orange,
+          color: color, // Sử dụng màu được truyền vào
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Column(

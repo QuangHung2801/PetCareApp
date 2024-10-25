@@ -27,4 +27,27 @@ public class PasswordResetController {
             throw new RuntimeException(e);
         }
     }
+
+    @PostMapping("/verify-token")
+    public ResponseEntity<String> validateResetToken(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        boolean isValid = passwordResetService.validatePasswordResetToken(token);
+        if (isValid) {
+            return ResponseEntity.ok("Token is valid.");
+        } else {
+            return ResponseEntity.badRequest().body("Invalid or expired token.");
+        }
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+        try {
+            passwordResetService.updatePassword(token, newPassword);
+            return ResponseEntity.ok("Password has been successfully reset.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

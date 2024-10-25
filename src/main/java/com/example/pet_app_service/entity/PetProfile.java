@@ -1,5 +1,6 @@
 package com.example.pet_app_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +23,7 @@ public class PetProfile {
     @Size(max = 255, message = "Mô tả không được vượt quá 255 ký tự")
     private String description;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "M/d/yyyy")
     @NotNull(message = "Sinh nhật không được để trống")
     private LocalDate birthday;
 

@@ -1,10 +1,14 @@
 package com.example.pet_app_service.service;
 
 import com.example.pet_app_service.entity.PasswordResetToken;
+import com.example.pet_app_service.entity.User;
+import com.example.pet_app_service.repository.PasswordResetTokenRepository;
+import com.example.pet_app_service.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.pet_app_service.repository.PasswordResetTokenRepository;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -17,6 +21,12 @@ public class PasswordResetService {
 
     @Autowired
     private PasswordResetTokenRepository tokenRepository;
+
+    @Autowired
+    private UserRepository userRepository; // Khai báo UserRepository
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; // Khai báo PasswordEncoder
 
     public void sendResetEmail(String email) throws MessagingException {
         // Check if email is registered
@@ -40,12 +50,40 @@ public class PasswordResetService {
         emailService.sendSimpleEmail(email, subject, body);
     }
 
+    public boolean validatePasswordResetToken(String token) {
+        Optional<PasswordResetToken> resetToken = tokenRepository.findByToken(token);
+        return resetToken.isPresent() && resetToken.get().getExpiryDate().isAfter(LocalDateTime.now());
+    }
+
+    public void updatePassword(String token, String newPassword) {
+        Optional<PasswordResetToken> resetToken = tokenRepository.findByToken(token);
+        if (resetToken.isEmpty() || resetToken.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Invalid or expired token");
+        }
+
+        // Get the email associated with the token
+        String email = resetToken.get().getEmail();
+
+        // Find the user by email
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        // Update the password
+        User user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Remove the used token
+        tokenRepository.delete(resetToken.get());
+    }
+
     private String generateOTP() {
         return String.format("%06d", new Random().nextInt(999999));
     }
 
     private boolean isEmailRegistered(String email) {
-        // Implement logic to check if email exists in UserRepository
-        return true; // Temporary stub, replace with actual check
+        return userRepository.findByEmail(email).isPresent();
     }
 }

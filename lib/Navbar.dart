@@ -15,7 +15,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Bảng tin'),
-        BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Khám phá'),
+        BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'tin tức '),
         BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'thú cưng'),
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Dịch vụ'),
         BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),

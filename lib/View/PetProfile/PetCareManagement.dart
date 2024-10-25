@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ungdungchamsocthucung/View/PetProfile/vaccine.dart';
 
-import 'ExternalParasites.dart';
-import 'MedicalRecord.dart';
-import 'Parasite.dart';
+import 'BookAppointmentPage.dart';
 import 'PetProfile.dart';
 import 'appointment.dart';
-import 'medicalHistory.dart';
+
 
 class PetCareManagement extends StatelessWidget {
   @override
@@ -34,8 +32,9 @@ class PetCareManagement extends StatelessWidget {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
               children: [
-                _buildGridItem('Lịch hẹn', Icons.timelapse, context, AppointmentReminderPage(), Colors.red),
+                _buildGridItem('Nhắc lịch hẹn', Icons.timelapse, context, AppointmentReminderPage(), Colors.red),
                 _buildGridItem('Sổ sức khỏe thú cưng', Icons.book, context, PetHealthScreen(), Colors.green),
+                _buildGridItem('Đặt lịch hẹn' , Icons.timer, context, BookAppointmentPage(), Colors.orange),
               ],
             ),
           ),

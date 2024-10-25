@@ -118,7 +118,6 @@ class _AddPetPageState extends State<AddPetPage> {
                       backgroundImage: imageUrl != null && imageUrl!.isNotEmpty
                           ? FileImage(File(imageUrl!))
                           : null,
-                      child: Icon(Icons.camera_alt, size: 40, color: Colors.grey[700]),
                     ),
                     SizedBox(height: 8),
                     Text(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,7 +11,6 @@ class AddPetPage extends StatefulWidget {
 class _AddPetPageState extends State<AddPetPage> {
   String? gender = "Con cái";
   String? neutered = "Chưa";
-  String? petType = "Chó"; // Lựa chọn mặc định cho loại động vật
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController birthdayController = TextEditingController();
@@ -24,12 +24,11 @@ class _AddPetPageState extends State<AddPetPage> {
     Map<String, dynamic> petData = {
       "name": nameController.text,
       "description": descriptionController.text,
-      "birthday": birthdayController.text,
+      "birthday": birthdayController.text, // Đảm bảo định dạng đúng
       "gender": gender,
       "neutered": neutered == "Rồi",
       "weight": double.parse(weightController.text),
-      "imageUrl": imageUrl,
-      "type": petType // Cập nhật loại động vật
+      "imageUrl": imageUrl // Cập nhật hình đại diện
     };
 
     try {
@@ -97,7 +96,6 @@ class _AddPetPageState extends State<AddPetPage> {
             ),
             SizedBox(height: 16),
             TextField(
-              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Tên thú cưng',
                 border: OutlineInputBorder(),
@@ -105,7 +103,6 @@ class _AddPetPageState extends State<AddPetPage> {
             ),
             SizedBox(height: 16),
             TextField(
-              controller: descriptionController,
               decoration: InputDecoration(
                 labelText: 'Mô tả về thú cưng',
                 border: OutlineInputBorder(),
@@ -113,7 +110,6 @@ class _AddPetPageState extends State<AddPetPage> {
             ),
             SizedBox(height: 16),
             TextField(
-              controller: birthdayController,
               decoration: InputDecoration(
                 labelText: 'Sinh nhật',
                 border: OutlineInputBorder(),
@@ -123,26 +119,6 @@ class _AddPetPageState extends State<AddPetPage> {
               onTap: () {
                 // Chọn ngày
               },
-            ),
-            SizedBox(height: 16),
-            Text('Category'),
-            DropdownButtonFormField<String>(
-              value: petType,
-              onChanged: (String? newValue) {
-                setState(() {
-                  petType = newValue;
-                });
-              },
-              items: <String>['Chó', 'Mèo', 'Chim', 'Thỏ', 'Khác']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-              ),
             ),
             SizedBox(height: 16),
             Text('Chọn giới tính'),
@@ -206,7 +182,6 @@ class _AddPetPageState extends State<AddPetPage> {
             ),
             SizedBox(height: 16),
             TextField(
-              controller: weightController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Cân nặng',
@@ -218,7 +193,7 @@ class _AddPetPageState extends State<AddPetPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  addPetProfile();
+
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

@@ -3,6 +3,7 @@ import 'View/ Social/Following.dart';
 import 'Navbar.dart';
 import 'View/ Social/discover.dart';
 import 'View/Menu/Menu.dart';
+import 'View/PetProfile/PetCareManagement.dart';
 import 'View/Service/PetServicesPage.dart';
 import 'View/PetProfile/PetProfile.dart';
 
@@ -49,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     HomePageSociety(),
     ExplorePage(),
-    PetHealthScreen(),
+    PetCareManagement(),
     PetServicesPage(),
     HomePage(),
   ];

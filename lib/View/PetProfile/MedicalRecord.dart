@@ -39,7 +39,7 @@ class GiaiPhauScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundImage: AssetImage('assets/cat.png'), // Replace with your image path
+                        // backgroundImage: AssetImage('assets/cat.png'), // Replace with your image path
                       ),
                       SizedBox(width: 16),
                       Column(
@@ -53,7 +53,7 @@ class GiaiPhauScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: 4),
-                          Text("30/07/2021 | Mèo Mỹ lông ngắn"),
+                          Text("30/07/2021 "),
                         ],
                       ),
                     ],

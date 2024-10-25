@@ -29,7 +29,7 @@ class ExplorePage extends StatelessWidget {
         children: [
           Text("Khám phá", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           SizedBox(height: 16),
-          Text("Bản tin Pety", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text("Bản tin Pet", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 16),
           Card(
             elevation: 4,

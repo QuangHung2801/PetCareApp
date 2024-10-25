@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Pety App',
+      title: 'Pet App',
       home: HomePage(),
     );
   }
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
         SizedBox(height: 16),
         _buildMenuOptionCard(
           icon: Icons.nfc,
-          title: "Pety Smart NFC",
+          title: "Pet Smart NFC",
         ),
         SizedBox(height: 16),
         _buildMenuOptionCard(

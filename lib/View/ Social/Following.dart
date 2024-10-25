@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Pety App',
+      title: 'Pet App',
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePageSociety> {
             ),
             SizedBox(width: 10),
             Text(
-              'Pety',
+              'Pet',
               style: TextStyle(
                 color: Colors.orange,
                 fontWeight: FontWeight.bold,

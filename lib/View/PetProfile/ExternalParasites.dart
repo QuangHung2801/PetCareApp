@@ -38,21 +38,23 @@ class _NgoaiKySinhScreenState extends State<NgoaiKySinhScreen> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundImage: NetworkImage('https://link-to-cat-image'), // Thay bằng URL ảnh thực tế
+                  // backgroundImage: NetworkImage('https://link-to-cat-image'), // Thay bằng URL ảnh thực tế
                 ),
                 SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.female, color: Colors.orange),
-                        SizedBox(width: 4),
-                        Text('Catty', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Text('30/07/2021 | Mèo Mỹ lông ngắn', style: TextStyle(color: Colors.grey)),
-                  ],
+                Expanded( // Wrap Column with Expanded
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.female, color: Colors.orange),
+                          SizedBox(width: 4),
+                          Text('Catty', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      Text('30/07/2021 | Mèo Mỹ lông ngắn', style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -3,68 +3,39 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'EnterTokenScreen.dart';
+import 'ResetPasswordScreen.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
+class EnterTokenScreen extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ForgotPasswordScreen(),
-    );
-  }
+  _EnterTokenScreenState createState() => _EnterTokenScreenState();
 }
 
-class ForgotPasswordScreen extends StatefulWidget {
-  @override
-  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
-}
-
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final TextEditingController _emailController = TextEditingController();
+class _EnterTokenScreenState extends State<EnterTokenScreen> {
+  final TextEditingController _tokenController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  Future<void> sendResetLink() async {
+  Future<void> verifyToken() async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8888/api/password-reset/request'),
+      Uri.parse('http://10.0.2.2:8888/api/password-reset/verify-token'),
       headers: {
         'Content-Type': 'application/json', // Đặt Content-Type là application/json
       },
-      body: jsonEncode({'email': _emailController.text}), // Dùng jsonEncode để chuyển thành JSON
+      body: jsonEncode({'token': _tokenController.text}),
     );
 
     if (response.statusCode == 200) {
-      // Hiển thị thông báo thành công và chuyển sang trang EnterTokenReset
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Thành công'),
-          content: Text('Một đường link khôi phục mật khẩu đã được gửi tới email của bạn.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => EnterTokenScreen()),
-                );
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ),
+      // Nếu token hợp lệ, chuyển sang trang đặt lại mật khẩu
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ResetPasswordScreen(token: _tokenController.text)),
       );
     } else {
-      // Xử lý lỗi
+      // Hiển thị thông báo lỗi
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Lỗi'),
-          content: Text('Không thể gửi email khôi phục mật khẩu.'),
+          content: Text('Token không hợp lệ hoặc đã hết hạn.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -79,9 +50,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('khôi phục mật khẩu'),
+        title: Text('Nhập Token'),
         backgroundColor: Colors.orange,
         centerTitle: true,
       ),
@@ -94,31 +64,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'khôi phục mật khẩu',
+                'Nhập mã token',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               Text(
-                'chúng tôi sẽ gửi đến email để gửi đường link khôi phục mật khẩu.',
+                'Vui lòng nhập mã token đã được gửi đến email của bạn.',
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               SizedBox(height: 30),
               TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
+                controller: _tokenController,
                 decoration: InputDecoration(
-                  labelText: 'Email Address',
+                  labelText: 'Token',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixIcon: Icon(Icons.email),
+                  prefixIcon: Icon(Icons.lock),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'làm ơn nhập mật khẩu của bạn ';
-                  } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$')
-                      .hasMatch(value)) {
-                    return 'Enter a valid email address';
+                    return 'Vui lòng nhập mã token.';
                   }
                   return null;
                 },
@@ -129,8 +95,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Gọi phương thức gửi đường link khôi phục mật khẩu
-                      sendResetLink();
+                      verifyToken();
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -141,7 +106,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   child: Text(
-                    'Send Reset Link',
+                    'Xác nhận Token',
                     style: TextStyle(fontSize: 18),
                   ),
                 ),

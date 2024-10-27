@@ -1,5 +1,6 @@
-import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 class AddPetPage extends StatefulWidget {
@@ -10,34 +11,62 @@ class AddPetPage extends StatefulWidget {
 class _AddPetPageState extends State<AddPetPage> {
   String? gender = "Con cái";
   String? neutered = "Chưa";
-  String? petType = "Chó"; // Lựa chọn mặc định cho loại động vật
+  String? petType = "Chó";
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController birthdayController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
-  String? imageUrl = "";
+  File? _image;
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
 
   Future<void> addPetProfile() async {
     final String apiUrl = "http://10.0.2.2:8888/api/pet/add";
 
-    // Dữ liệu từ form
-    Map<String, dynamic> petData = {
-      "name": nameController.text,
-      "description": descriptionController.text,
-      "birthday": birthdayController.text,
-      "gender": gender,
-      "neutered": neutered == "Rồi",
-      "weight": double.parse(weightController.text),
-      "imageUrl": imageUrl,
-      "type": petType // Cập nhật loại động vật
-    };
+    if (nameController.text.isEmpty ||
+        descriptionController.text.isEmpty ||
+        birthdayController.text.isEmpty ||
+        weightController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng điền đầy đủ thông tin")),
+      );
+      return;
+    }
+
+    double? weight = double.tryParse(weightController.text);
+    if (weight == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập cân nặng hợp lệ")),
+      );
+      return;
+    }
+
+    var request = http.MultipartRequest('POST', Uri.parse(apiUrl))
+      ..fields['name'] = nameController.text
+      ..fields['description'] = descriptionController.text
+      ..fields['birthday'] = birthdayController.text
+      ..fields['gender'] = gender!
+      ..fields['neutered'] = neutered == "Rồi" ? "true" : "false"
+      ..fields['weight'] = weight.toString()
+      ..fields['type'] = petType!;
+
+    // Attach the image if it exists
+    if (_image != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'image', // Ensure this matches your backend field name
+        _image!.path,
+      ));
+    }
 
     try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(petData),
-      );
+      var response = await request.send();
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,10 +78,23 @@ class _AddPetPageState extends State<AddPetPage> {
         );
       }
     } catch (e) {
-      print("Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Đã xảy ra lỗi")),
       );
+    }
+  }
+
+  Future<void> _selectBirthday(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null) {
+      setState(() {
+        birthdayController.text = "${pickedDate.toIso8601String().substring(0, 10)}"; // Format to yyyy-MM-dd
+      });
     }
   }
 
@@ -60,41 +102,25 @@ class _AddPetPageState extends State<AddPetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Thêm thú cưng mới',
-          style: TextStyle(color: Colors.black),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        title: Text('Thêm thú cưng mới'),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.grey[300],
-                    child: Icon(Icons.camera_alt, size: 40, color: Colors.grey[700]),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Chọn hình đại diện cho thú cưng',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
+            GestureDetector(
+              onTap: _pickImage,
+              child: CircleAvatar(
+                radius: 40,
+                backgroundColor: Colors.grey[300],
+                backgroundImage: _image != null ? FileImage(_image!) : null,
+                child: _image == null
+                    ? Icon(Icons.camera_alt, size: 40, color: Colors.grey[700])
+                    : null,
               ),
             ),
+            SizedBox(height: 8),
+            Text('Chọn hình đại diện cho thú cưng', style: TextStyle(color: Colors.grey)),
             SizedBox(height: 16),
             TextField(
               controller: nameController,
@@ -120,9 +146,7 @@ class _AddPetPageState extends State<AddPetPage> {
                 suffixIcon: Icon(Icons.calendar_today),
               ),
               readOnly: true,
-              onTap: () {
-                // Chọn ngày
-              },
+              onTap: () => _selectBirthday(context),
             ),
             SizedBox(height: 16),
             Text('Loại động vật'),
@@ -180,8 +204,8 @@ class _AddPetPageState extends State<AddPetPage> {
               children: [
                 Expanded(
                   child: RadioListTile<String>(
-                    title: const Text('Chưa'),
-                    value: 'Chưa',
+                    title: const Text('Rồi'),
+                    value: 'Rồi',
                     groupValue: neutered,
                     onChanged: (String? value) {
                       setState(() {
@@ -192,8 +216,8 @@ class _AddPetPageState extends State<AddPetPage> {
                 ),
                 Expanded(
                   child: RadioListTile<String>(
-                    title: const Text('Rồi'),
-                    value: 'Rồi',
+                    title: const Text('Chưa'),
+                    value: 'Chưa',
                     groupValue: neutered,
                     onChanged: (String? value) {
                       setState(() {
@@ -207,28 +231,16 @@ class _AddPetPageState extends State<AddPetPage> {
             SizedBox(height: 16),
             TextField(
               controller: weightController,
-              keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Cân nặng',
-                suffixText: 'Kg',
+                labelText: 'Cân nặng (kg)',
                 border: OutlineInputBorder(),
               ),
+              keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 24),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  addPetProfile();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text('Thêm', style: TextStyle(fontSize: 18)),
-              ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: addPetProfile,
+              child: Text('Thêm thú cưng'),
             ),
           ],
         ),

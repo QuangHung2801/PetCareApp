@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class BookAppointmentPage extends StatefulWidget {
   @override
@@ -13,6 +15,29 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
 
   // Danh sách thú cưng
   final List<String> pets = ["Chó Husky", "Mèo Anh lông ngắn", "Chim Vẹt"];
+
+  Future<void> bookAppointment() async {
+    final url = Uri.parse('http://10.0.2.2:8888/api/appointments');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'pet': selectedPet,
+        'date': "${selectedDate!.toIso8601String().split('T').first}",
+        'time': "${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}",
+        'reason': reasonController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Lịch hẹn đã được lưu thành công!");
+    } else {
+      print("Lỗi khi lưu lịch hẹn: ${response.statusCode}");
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -47,12 +72,11 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
         title: Text('Đặt lịch khám cho thú cưng'),
         backgroundColor: Colors.orange,
       ),
-      body: SingleChildScrollView( // Thêm SingleChildScrollView
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Chọn thú cưng
             Text("Chọn thú cưng", style: TextStyle(fontSize: 16)),
             DropdownButton<String>(
               value: selectedPet,
@@ -70,8 +94,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               }).toList(),
             ),
             SizedBox(height: 16),
-
-            // Chọn ngày hẹn
             Text("Chọn ngày hẹn", style: TextStyle(fontSize: 16)),
             ListTile(
               title: Text(
@@ -83,8 +105,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               onTap: () => _selectDate(context),
             ),
             SizedBox(height: 16),
-
-            // Chọn giờ hẹn
             Text("Chọn giờ hẹn", style: TextStyle(fontSize: 16)),
             ListTile(
               title: Text(
@@ -96,8 +116,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               onTap: () => _selectTime(context),
             ),
             SizedBox(height: 16),
-
-            // Lý do khám
             TextField(
               controller: reasonController,
               decoration: InputDecoration(
@@ -107,13 +125,9 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               maxLines: 3,
             ),
             SizedBox(height: 24),
-
-            // Nút đặt lịch
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  // Xử lý logic đặt lịch tại đây
-                },
+                onPressed: bookAppointment,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
                   shape: RoundedRectangleBorder(

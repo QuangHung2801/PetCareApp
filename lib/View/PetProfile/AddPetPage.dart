@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 class AddPetPage extends StatefulWidget {
   @override
   _AddPetPageState createState() => _AddPetPageState();
+
 }
 
 class _AddPetPageState extends State<AddPetPage> {
@@ -17,6 +18,10 @@ class _AddPetPageState extends State<AddPetPage> {
   final TextEditingController birthdayController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   File? _image;
+
+
+
+
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -56,6 +61,8 @@ class _AddPetPageState extends State<AddPetPage> {
       ..fields['neutered'] = neutered == "Rồi" ? "true" : "false"
       ..fields['weight'] = weight.toString()
       ..fields['type'] = petType!;
+
+
 
     // Attach the image if it exists
     if (_image != null) {

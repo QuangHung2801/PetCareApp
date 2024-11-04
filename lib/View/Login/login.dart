@@ -47,6 +47,8 @@ class LoginScreen extends StatelessWidget {
         context,
         MaterialPageRoute(builder: (context) => MyHomePage(title: 'home')), // Thay NavbarScreen bằng tên màn hình navbar của bạn
       );
+
+
     } else {
       print('Login failed: ${response.body}');
     }

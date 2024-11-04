@@ -15,6 +15,10 @@ public class PetProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @NotNull(message = "Tên thú cưng không được để trống")
     @Size(min = 2, max = 50, message = "Tên thú cưng phải có từ 2 đến 50 ký tự")
     private String name;
@@ -64,6 +68,14 @@ public class PetProfile {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public User getUser() { // Chỉnh sửa: getter trả về User
+        return user;
+    }
+
+    public void setUser(User user) { // Chỉnh sửa: setter nhận User đối tượng
+        this.user = user;
     }
 
     public String getName() {

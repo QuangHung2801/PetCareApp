@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "users")
@@ -32,6 +34,9 @@ public class User {
     @Size(max = 50, message = "Tên của bạn phải ít hơn 50 ký tự")
     @NotBlank(message = "Tên của bạn không được để trống")
     private String name;
+//fh
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<PetProfile> petProfiles;
 
     // Constructor
     public User() {}
@@ -51,6 +56,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {

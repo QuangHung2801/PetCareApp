@@ -1,9 +1,17 @@
 package com.example.pet_app_service.controller;
 
+import com.example.pet_app_service.Validtion.ValidUserId;
 import com.example.pet_app_service.entity.PetProfile;
+import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.service.PetProfileService;
+import com.example.pet_app_service.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
@@ -12,19 +20,36 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/pet")
 public class PetProfileController {
 
     private final PetProfileService petProfileService;
+    private final UserService userService;
 
-    @Value("${upload.path}")
-    private String uploadDir;
 
-    public PetProfileController(PetProfileService petProfileService) {
+    // Đường dẫn nơi lưu trữ hình ảnh
+    private final String UPLOAD_DIR = "src/main/resources/static/update/img/pets/";
+
+    public PetProfileController(PetProfileService petProfileService, UserService userService) {
         this.petProfileService = petProfileService;
+        this.userService = userService;
     }
 
+    // Endpoint để lấy tất cả hồ sơ thú cưng
+    @PostMapping("/all")
+    public ResponseEntity<List<PetProfile>> getPetProfilesByUserId(@RequestParam("userId") Long userId) {
+        List<PetProfile> petProfiles = petProfileService.getPetProfilesByUserId(userId);
+        for (PetProfile pet : petProfiles) {
+            pet.setImageUrl(pet.getImageUrl());
+        }
+        return ResponseEntity.ok(petProfiles);
+    }
+
+    // Endpoint để thêm hồ sơ thú cưng
     @PostMapping("/add")
     public ResponseEntity<String> addPetProfile(
             @RequestParam("name") String name,
@@ -35,18 +60,39 @@ public class PetProfileController {
             @RequestParam("weight") double weight,
             @RequestParam("type") String type,
             @RequestParam("image") MultipartFile image) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Current Authentication: " + authentication);
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            System.out.println("Người dùng chưa đăng nhập!");
+            return ResponseEntity.status(403).body("Bạn cần đăng nhập trước khi thêm hồ sơ thú cưng");
+        }
 
         try {
-            // Handle image upload
-            String imageUrl = saveImage(image);
-            if (imageUrl == null) {
-                return ResponseEntity.badRequest().body("Image upload failed");
+            // Lấy thông tin người dùng hiện tại từ SecurityContext
+
+            String currentUserPhone = authentication.getName(); // Sử dụng tên đăng nhập (số điện thoại)
+            System.out.println("phone: " + currentUserPhone);
+            // Tìm người dùng bằng số điện thoại
+            User currentUser = userService.findByPhone(currentUserPhone);
+
+            // Kiểm tra nếu người dùng không tồn tại
+            if (currentUser == null) {
+                return ResponseEntity.status(403).body("Người dùng không được tìm thấy hoặc không xác thực");
             }
 
-            // Convert string birthday to LocalDate
+            // Lấy userId
+            Long userId = currentUser.getId(); // Lấy userId từ đối tượng User
+            System.out.println("id: " + userId);
+            // Xử lý upload hình ảnh
+            String imageUrl = saveImage(image);
+            if (imageUrl == null) {
+                return ResponseEntity.badRequest().body("Tải ảnh lên thất bại");
+            }
+
+            // Chuyển đổi chuỗi ngày sinh thành LocalDate
             LocalDate birthDate = LocalDate.parse(birthday);
 
-            // Create and save the PetProfile
+            // Tạo và lưu hồ sơ thú cưng
             PetProfile petProfile = new PetProfile();
             petProfile.setName(name);
             petProfile.setDescription(description);
@@ -55,30 +101,32 @@ public class PetProfileController {
             petProfile.setNeutered(neutered);
             petProfile.setWeight(weight);
             petProfile.setImageUrl(imageUrl);
+            petProfile.setUser(currentUser); // Gán đối tượng User cho hồ sơ thú cưng
 
+            // Lưu hồ sơ thú cưng
             petProfileService.savePetProfile(petProfile);
 
             return ResponseEntity.ok("Thú cưng đã được thêm thành công");
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+            return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
         }
     }
 
+    // Phương thức để lưu hình ảnh
     private String saveImage(MultipartFile image) throws IOException {
         if (image.isEmpty()) {
             return null;
         }
-        // Create unique filename
+        // Tạo tên tệp tin duy nhất
         String filename = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-        Path filePath = Paths.get(uploadDir, filename);
+        Path filePath = Paths.get(UPLOAD_DIR, filename);
 
-        // Ensure upload directory exists
+        // Đảm bảo thư mục upload tồn tại
         Files.createDirectories(filePath.getParent());
-
-        // Save file
+        // Lưu tệp tin
         Files.write(filePath, image.getBytes());
 
-        return filePath.toString();
+        return filename; // Trả về tên tệp tin để lưu vào database
     }
 }

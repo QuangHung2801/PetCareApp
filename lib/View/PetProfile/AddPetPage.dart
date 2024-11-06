@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddPetPage extends StatefulWidget {
   @override
@@ -35,6 +36,12 @@ class _AddPetPageState extends State<AddPetPage> {
   Future<void> addPetProfile() async {
     final String apiUrl = "http://10.0.2.2:8888/api/pet/add";
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? sessionId = prefs.getString('JSESSIONID');
+
+      print('Session ID: $sessionId');
+
+
     if (nameController.text.isEmpty ||
         descriptionController.text.isEmpty ||
         birthdayController.text.isEmpty ||
@@ -62,9 +69,6 @@ class _AddPetPageState extends State<AddPetPage> {
       ..fields['weight'] = weight.toString()
       ..fields['type'] = petType!;
 
-
-
-    // Attach the image if it exists
     if (_image != null) {
       request.files.add(await http.MultipartFile.fromPath(
         'image', // Ensure this matches your backend field name
@@ -72,9 +76,18 @@ class _AddPetPageState extends State<AddPetPage> {
       ));
     }
 
+
+    // Gửi session ID trong header Cookie
+    request.headers['Cookie'] = '$sessionId';
+    print('Request Headers: ${request.headers}');
+
+    // Attach the image if it exists
+
     try {
       var response = await request.send();
-
+      final responseBody = await http.Response.fromStream(response);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${responseBody.body}');
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Thêm thú cưng thành công")),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import '../PetProfile/AddPetProfile.dart';
 import 'package:http/http.dart' as http;
@@ -17,9 +18,9 @@ class PetProfile {
 
   factory PetProfile.fromJson(Map<String, dynamic> json) {
     return PetProfile(
-      id: json['id'],
-      name: json['name'],
-      imageUrl: json['imageUrl'],
+      id: json['id']??0,
+      name: json['name']??'known',
+      imageUrl: json['imageUrl']??'',
     );
   }
 }
@@ -54,16 +55,18 @@ class _HomePageState extends State<HomePage> {
     });
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId'); // Retrieve the stored user ID
-
+    String? userId = prefs.getString('userId');
+    print('User ID: $userId');// Retrieve the stored user ID
+    String? sessionId = prefs.getString('sessionId');
     try {
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8888/api/pet/all'),
         body: {'userId': userId}, // Use the retrieved user ID
       );
-
+      print('Response status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+        print('Data received: $data');
         setState(() {
           petProfiles = data.map((json) => PetProfile.fromJson(json)).toList();
         });
@@ -76,6 +79,35 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? sessionId = prefs.getString('sessionId');
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8888/api/auth/logout'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': 'JSESSIONID=$sessionId' // Attach the session ID cookie
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Logout successful, remove session data from local storage
+        await prefs.remove('sessionId');
+        await prefs.remove('userId');
+
+        // Navigate to the login screen
+        Navigator.pushReplacementNamed(context, '/LoginScreen');
+        print('Đăng xuất thành công');
+      } else {
+        print('Đăng xuất thất bại: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error during logout: $e');
     }
   }
 
@@ -105,6 +137,11 @@ class _HomePageState extends State<HomePage> {
           _buildAddProfileCard(context),
           SizedBox(height: 20),
           _buildMenuOptions(),
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text("Đăng xuất", style: TextStyle(color: Colors.red)),
+            onTap: _showLogoutDialog,
+          ),
         ],
       ),
     );
@@ -312,6 +349,33 @@ class _HomePageState extends State<HomePage> {
         ],
       );
     }
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Đăng xuất"),
+          content: Text("Bạn có muốn đăng xuất không?"),
+          actions: [
+            TextButton(
+              child: Text("Không"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại
+              },
+            ),
+            TextButton(
+              child: Text("Có"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại
+                _logout(); // Gọi hàm đăng xuất
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
 

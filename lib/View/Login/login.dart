@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../Navbar.dart';
 import '../../main.dart';
+import '../Menu/Menu.dart';
 import 'Forgotpassword.dart';
 import 'register.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,7 +21,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LoginScreen(),
+        '/LoginScreen': (context) => LoginScreen(),
+        '/HomePage': (context) => HomePage(),
+      },
     );
   }
 }
@@ -41,6 +48,25 @@ class LoginScreen extends StatelessWidget {
     );
 
     if (response.statusCode == 200) {
+      final responseBody = json.decode(response.body);
+      String? jsessionId = response.headers['set-cookie']?.split(';').firstWhere((cookie) => cookie.startsWith('JSESSIONID='), orElse: () => '');
+      if (jsessionId != null && jsessionId.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('JSESSIONID', jsessionId); // Lưu JSESSIONID
+        print('JSESSIONID saved: $jsessionId');
+      }
+
+      if (responseBody['userId'] is int) {
+        int userId = responseBody['userId'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId.toString()); // Chuyển đổi sang chuỗi trước khi lưu
+        print('User ID saved: $userId');
+      } else if (responseBody['userId'] is String) {
+        String userId = responseBody['userId'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId); // Lưu trực tiếp nếu đã là chuỗi
+        print('User ID saved: $userId');
+      }
       print('Login successful: ${response.body}');
       // Có thể thêm điều hướng vào màn hình chính ở đây
       Navigator.pushReplacement(

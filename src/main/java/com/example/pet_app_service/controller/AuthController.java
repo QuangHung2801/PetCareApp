@@ -45,23 +45,26 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody Map<String, String> loginData, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody Map<String, String> loginData, HttpServletRequest request) {
         String phone = loginData.get("phone");
         String password = loginData.get("password");
-        System.out.println("Authentication Info: " + SecurityContextHolder.getContext().getAuthentication());
         try {
-            User user = userService.login(phone, password);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
+            User user=userService.login(phone, password);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    user.getPhone(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Thiết lập thông tin chi tiết
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            System.out.println("Authentication Info: " + SecurityContextHolder.getContext().getAuthentication());
-            return ResponseEntity.ok("Đăng nhập thành công");
+            // Đặt chi tiết xác thực vào phiên
+            request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Đăng nhập thành công");
+            response.put("userId", user.getId()); // Include userId in the response
+            response.put("phone", user.getPhone());
+
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Thông tin đăng nhập không hợp lệ");
+            System.out.println("Login failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Thông tin đăng nhập không hợp lệ"));
         }
 
 
@@ -70,11 +73,19 @@ public class AuthController {
     @GetMapping("/check-auth")
     public ResponseEntity<String> checkAuth() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("Authentication Info: " + auth);
         if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
             return ResponseEntity.ok("User is authenticated: " + auth.getName());
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        // Invalidate session to clear authentication and logout user
+        request.getSession().invalidate();
+        SecurityContextHolder.clearContext(); // Clear authentication details
+
+        return ResponseEntity.ok("Đăng xuất thành công");
     }
 
 

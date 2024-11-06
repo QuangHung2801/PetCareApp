@@ -5,10 +5,12 @@ import com.example.pet_app_service.entity.PetProfile;
 import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.service.PetProfileService;
 import com.example.pet_app_service.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,9 +51,19 @@ public class PetProfileController {
         return ResponseEntity.ok(petProfiles);
     }
 
+    @PostMapping("/check-auth")
+    public ResponseEntity<String> checkAuth() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Current Authentication: " + auth);
+        if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+            return ResponseEntity.ok("User is authenticated: " + auth.getName());
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+    }
+
     // Endpoint để thêm hồ sơ thú cưng
     @PostMapping("/add")
-    public ResponseEntity<String> addPetProfile(
+    public ResponseEntity<?> addPetProfile(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("birthday") String birthday,
@@ -59,18 +71,21 @@ public class PetProfileController {
             @RequestParam("neutered") boolean neutered,
             @RequestParam("weight") double weight,
             @RequestParam("type") String type,
-            @RequestParam("image") MultipartFile image) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("Current Authentication: " + authentication);
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            System.out.println("Người dùng chưa đăng nhập!");
-            return ResponseEntity.status(403).body("Bạn cần đăng nhập trước khi thêm hồ sơ thú cưng");
-        }
+            @RequestParam("image") MultipartFile image,  HttpServletRequest request) {
 
         try {
-            // Lấy thông tin người dùng hiện tại từ SecurityContext
+            String cookieHeader = request.getHeader("Cookie");
+            System.out.println("Received Cookie Header: " + cookieHeader);
 
-            String currentUserPhone = authentication.getName(); // Sử dụng tên đăng nhập (số điện thoại)
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("Current Authentication: " + auth);
+            // Kiểm tra xác thực người dùng
+            if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+            }
+
+
+            String currentUserPhone = auth.getName(); // Sử dụng tên đăng nhập (số điện thoại)
             System.out.println("phone: " + currentUserPhone);
             // Tìm người dùng bằng số điện thoại
             User currentUser = userService.findByPhone(currentUserPhone);
@@ -128,5 +143,15 @@ public class PetProfileController {
         Files.write(filePath, image.getBytes());
 
         return filename; // Trả về tên tệp tin để lưu vào database
+    }
+
+    @DeleteMapping("/delete/{petId}")
+    public ResponseEntity<String> deletePetProfile(@PathVariable Long petId) {
+        try {
+            petProfileService.deletePetProfileById(petId);
+            return ResponseEntity.ok("Hồ sơ thú cưng đã được xóa thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi: " + e.getMessage());
+        }
     }
 }

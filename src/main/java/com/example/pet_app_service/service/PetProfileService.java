@@ -24,4 +24,8 @@ public class PetProfileService {
     public void savePetProfile(PetProfile petProfile) {
         petProfileRepository.save(petProfile);
     }
+
+    public void deletePetProfileById(Long petId) {
+        petProfileRepository.deleteById(petId);
+    }
 }

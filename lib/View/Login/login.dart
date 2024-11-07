@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../Navbar.dart';
 import '../../main.dart';
 import '../Menu/Menu.dart';
+import '../admin/AdminPage.dart';
 import 'Forgotpassword.dart';
 import 'register.dart';
 import 'package:http/http.dart' as http;
@@ -68,12 +69,17 @@ class LoginScreen extends StatelessWidget {
         print('User ID saved: $userId');
       }
       print('Login successful: ${response.body}');
-      // Có thể thêm điều hướng vào màn hình chính ở đây
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyHomePage(title: 'home')), // Thay NavbarScreen bằng tên màn hình navbar của bạn
-      );
-
+      if (responseBody['phone'] == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AdminPage()), // Trang Admin
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MyHomePage(title: 'home')), // Trang chính cho user
+        );
+      }
 
     } else {
       print('Login failed: ${response.body}');
@@ -95,10 +101,9 @@ class LoginScreen extends StatelessWidget {
                 // Phone Number Input
                 TextField(
                   controller: _phoneController,  // Thêm controller cho số điện thoại
-                  keyboardType: TextInputType.phone,
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     labelText: 'Số điện thoại',
-                    prefixText: '+84 ',
                     border: OutlineInputBorder(),
                   ),
                 ),

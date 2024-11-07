@@ -73,11 +73,16 @@ class _HomePageState extends State<HomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
     print('User ID: $userId');// Retrieve the stored user ID
-    String? sessionId = prefs.getString('sessionId');
+    String? sessionId = prefs.getString('JSESSIONID');
+    print('Session ID: $sessionId');
     try {
       final response = await http.post(
         Uri.parse('http://10.0.2.2:8888/api/pet/all'),
-        body: {'userId': userId}, // Use the retrieved user ID
+        headers: {
+          'Cookie': 'JSESSIONID=$sessionId',
+          'Content-Type': 'application/json',
+        },
+        body:jsonEncode({'userId': userId}), // Use the retrieved user ID
       );
       print('Response status: ${response.statusCode}');
       if (response.statusCode == 200) {

@@ -1,8 +1,40 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'add_pet_adopt_screen.dart';
+class PetPost {
+  final String name;
+  final String description;
+  final String contactInfo;
+  final String imageUrl;
 
+  PetPost({required this.name, required this.description, required this.contactInfo, required this.imageUrl});
+
+  factory PetPost.fromJson(Map<String, dynamic> json) {
+    return PetPost(
+      name: json['name'],
+      description: json['description'],
+      contactInfo: json['contactInfo'],
+      imageUrl: json['imageUrl'],
+    );
+  }
+}
 class AdoptPetPage extends StatelessWidget {
+
+
+
+  Future<List<PetPost>> fetchPetPosts() async {
+  final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/pets/all'));
+
+  if (response.statusCode == 200) {
+  List<dynamic> data = json.decode(response.body);
+  return data.map((json) => PetPost.fromJson(json)).toList();
+  } else {
+  throw Exception('Failed to load pet posts');
+  }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

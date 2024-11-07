@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -42,6 +43,26 @@ public class AdminAppointmentController {
             return ResponseEntity.ok("Lịch hẹn đã bị từ chối.");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lịch hẹn không tồn tại.");
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateAppointmentStatus(
+            @PathVariable Long id, @RequestBody Map<String, String> payload) {
+        Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
+        if (appointmentOptional.isPresent()) {
+            Appointment appointment = appointmentOptional.get();
+            String status = payload.get("status");
+            try {
+                Appointment.Status updatedStatus = Appointment.Status.valueOf(status.toUpperCase());
+                appointment.setStatus(updatedStatus); // Update status
+                appointmentRepository.save(appointment); // Save existing appointment, no new creation
+                return ResponseEntity.ok("Appointment status updated successfully.");
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status provided.");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }
     }
 }

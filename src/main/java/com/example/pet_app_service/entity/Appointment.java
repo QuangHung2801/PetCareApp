@@ -36,7 +36,7 @@ public class Appointment {
     // Getters và Setters
 
     public enum Status {
-        PENDING, CONFIRMED, REJECTED,
+        PENDING, CONFIRMED, REJECTED
     }
 
     public Status getStatus() {

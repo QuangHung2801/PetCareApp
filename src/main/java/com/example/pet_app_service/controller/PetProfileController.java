@@ -47,11 +47,6 @@ public class PetProfileController {
 
         @PostMapping("/all")
         public ResponseEntity<?> getPetProfilesByUserId(@RequestBody Map<String, String> body) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                    System.out.println("Current Authentication: " + auth);
-                    if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
-                        return ResponseEntity.ok("User is authenticated: " + auth.getName());
-                    }
             String userIdStr = body.get("userId");
             if (userIdStr == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is required.");
@@ -64,7 +59,6 @@ public class PetProfileController {
             } catch (NumberFormatException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid User ID.");
             }
-
         // Lấy hồ sơ thú cưng của người dùng
         List<PetProfile> petProfiles = petProfileService.getPetProfilesByUserId(userId);
         for (PetProfile pet : petProfiles) {

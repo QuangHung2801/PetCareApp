@@ -46,8 +46,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/static/**", "/static/update/img/pets/**").permitAll()
-                        .requestMatchers("/api/auth/login","/api/auth/register").permitAll()
+                        .requestMatchers("/static/**", "/static/update/img/pets/**","/api/pet/all").permitAll()
+                        .requestMatchers("/api/auth/login","/api/auth/register","/api/auth/logout").permitAll()
                         .anyRequest().permitAll())
 
                 .build();

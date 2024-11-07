@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pet")
@@ -42,9 +43,29 @@ public class PetProfileController {
         this.userService = userService;
     }
 
-    // Endpoint để lấy tất cả hồ sơ thú cưng
-    @PostMapping("/all")
-    public ResponseEntity<List<PetProfile>> getPetProfilesByUserId(@RequestParam("userId") Long userId) {
+
+
+        @PostMapping("/all")
+        public ResponseEntity<?> getPetProfilesByUserId(@RequestBody Map<String, String> body) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    System.out.println("Current Authentication: " + auth);
+                    if (auth != null && !(auth instanceof AnonymousAuthenticationToken)) {
+                        return ResponseEntity.ok("User is authenticated: " + auth.getName());
+                    }
+            String userIdStr = body.get("userId");
+            if (userIdStr == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is required.");
+            }
+
+            // Convert userId from string to Long
+            Long userId;
+            try {
+                userId = Long.valueOf(userIdStr);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid User ID.");
+            }
+
+        // Lấy hồ sơ thú cưng của người dùng
         List<PetProfile> petProfiles = petProfileService.getPetProfilesByUserId(userId);
         for (PetProfile pet : petProfiles) {
             pet.setImageUrl(pet.getImageUrl());

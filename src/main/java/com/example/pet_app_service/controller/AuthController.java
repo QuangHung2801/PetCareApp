@@ -1,6 +1,8 @@
 package com.example.pet_app_service.controller;
 
+import com.example.pet_app_service.entity.Role;
 import com.example.pet_app_service.entity.User;
+import com.example.pet_app_service.service.RoleService;
 import com.example.pet_app_service.service.UserDetailsServiceImpl;
 import com.example.pet_app_service.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +29,8 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private RoleService roleService;
     @Autowired
     private HttpSession session;
 
@@ -37,6 +40,12 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<User> register(@Valid @RequestBody User user) {
         try {
+            // Gán vai trò user mặc định
+            Set<Role> roles = new HashSet<>();
+            Role userRole = roleService.findByName("USER");
+            roles.add(userRole);
+            user.setRoles(roles);
+
             User registeredUser = userService.register(user);
             return ResponseEntity.ok(registeredUser);
         } catch (RuntimeException e) {

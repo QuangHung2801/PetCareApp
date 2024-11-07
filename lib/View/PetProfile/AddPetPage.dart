@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../main.dart';
 import '../Menu/Menu.dart';
 
 class AddPetPage extends StatefulWidget {
@@ -94,10 +95,7 @@ class _AddPetPageState extends State<AddPetPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Thêm thú cưng thành công")),
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()), // Replace with your menu page widget
-        );
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Thất bại, thử lại sau")),

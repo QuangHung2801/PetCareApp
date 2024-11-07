@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ungdungchamsocthucung/View/PetProfile/vaccine.dart';
 
-import 'BookAppointmentPage.dart';
+import 'Viewappointment.dart';
 import 'PetProfile.dart';
 import 'appointment.dart';
 
@@ -37,7 +37,7 @@ class PetCareManagement extends StatelessWidget {
               children: [
                 _buildGridItem('Nhắc lịch hẹn', Icons.timelapse, context, AppointmentReminderPage(), Colors.red),
                 _buildGridItem('Sổ sức khỏe thú cưng', Icons.book, context, PetHealthScreen(), Colors.green),
-                _buildGridItem('Đặt lịch hẹn' , Icons.timer, context, BookAppointmentPage(), Colors.orange),
+                _buildGridItem('Đặt lịch hẹn' , Icons.timer, context,  ViewAppointment(), Colors.orange),
               ],
             ),
           ),

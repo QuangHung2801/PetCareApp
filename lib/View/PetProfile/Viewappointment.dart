@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'BookAppointmentPage.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,17 +11,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: AppointmentPage(),
+      home: ViewAppointment(),
     );
   }
 }
 
-class AppointmentPage extends StatefulWidget {
+class ViewAppointment extends StatefulWidget {
   @override
-  _AppointmentPageState createState() => _AppointmentPageState();
+  _ViewAppointmentState createState() => _ViewAppointmentState();
 }
 
-class _AppointmentPageState extends State<AppointmentPage> with SingleTickerProviderStateMixin {
+class _ViewAppointmentState extends State<ViewAppointment> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -63,6 +62,16 @@ class _AppointmentPageState extends State<AppointmentPage> with SingleTickerProv
           AppointmentList(status: "CANCELLED"),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BookAppointmentPage()),
+          );
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.orange,
+      ),
     );
   }
 }
@@ -98,37 +107,6 @@ class _AppointmentListState extends State<AppointmentList> {
     }
   }
 
-  // Function to update appointment status (Confirm or Cancel)
-  Future<void> updateAppointmentStatus(String appointmentId, String status) async {
-    try {
-      final response = await http.put(
-        Uri.parse('http://10.0.2.2:8888/api/admin/appointments/$appointmentId'),
-        body: json.encode({'status': status}),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          appointments = fetchAppointments();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Status updated successfully')),
-        );
-      } else {
-        print("Failed with status code: ${response.statusCode}");
-        print("Response body: ${response.body}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update appointment status. Status code: ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
-      print("Exception occurred: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating appointment status: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Appointment>>(
@@ -155,27 +133,6 @@ class _AppointmentListState extends State<AppointmentList> {
                   children: [
                     Text(appointment.service, style: TextStyle(fontSize: 12)),
                     Text(appointment.time, style: TextStyle(fontSize: 12)),
-                    // Display action buttons based on appointment status
-                    if (widget.status == "PENDING") ...[
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              // Update status to "CONFIRMED"
-                              updateAppointmentStatus(appointment.id, "CONFIRMED");
-                            },
-                            child: Text('Xác nhận'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Update status to "CANCELLED"
-                              updateAppointmentStatus(appointment.id, "CANCELLED");
-                            },
-                            child: Text('Hủy'),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -188,19 +145,17 @@ class _AppointmentListState extends State<AppointmentList> {
 }
 
 class Appointment {
-  final String id;
   final String customer;
   final String service;
   final String time;
 
-  Appointment({required this.id, required this.customer, required this.service, required this.time});
+  Appointment({required this.customer, required this.service, required this.time});
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
-      id: json['id'].toString(),  // Ensure there's an ID for each appointment
-      customer: json['customer'] ?? 'Chưa có thông tin khách hàng',
-      service: json['service'] ?? 'Chưa có thông tin dịch vụ',
-      time: json['time'] ?? 'Chưa có thời gian',
+      customer: json['customer'] ?? 'Chưa có thông tin khách hàng',  // Nếu customer là null, gán giá trị mặc định
+      service: json['service'] ?? 'Chưa có thông tin dịch vụ',       // Nếu service là null, gán giá trị mặc định
+      time: json['time'] ?? 'Chưa có thời gian',                      // Nếu time là null, gán giá trị mặc định
     );
   }
 }

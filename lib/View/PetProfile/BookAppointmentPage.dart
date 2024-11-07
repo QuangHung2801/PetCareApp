@@ -138,6 +138,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đặt lịch thành công!')),
       );
+      Navigator.pop(context);
     } else {// Log response body
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi khi lưu lịch hẹn: ${response.statusCode}")),

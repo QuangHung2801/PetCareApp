@@ -13,7 +13,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   String? selectedPet;
-
   List<Map<String, dynamic>> pets = [];
 
   @override
@@ -22,13 +21,10 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     fetchPets();
   }
 
-  // Fetch pets from the API
   Future<void> fetchPets() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
-    print('User ID: $userId');// Retrieve the stored user ID
     String? sessionId = prefs.getString('JSESSIONID');
-    print('Session ID: $sessionId');
 
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -62,7 +58,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
-  // Select date for appointment
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -77,7 +72,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
-  // Select time for appointment
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -90,7 +84,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
-  // Book appointment with selected details
   Future<void> bookAppointment() async {
     if (selectedPet == null || selectedDate == null || selectedTime == null || reasonController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,12 +92,11 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
       return;
     }
 
-    // Lấy id của thú cưng đã chọn
     int? selectedPetId;
     if (pets.isNotEmpty) {
       final pet = pets.firstWhere(
             (pet) => pet['name'] == selectedPet,
-        orElse: () => {}, // Return an empty map if no pet is found
+        orElse: () => {},
       );
       if (pet.isNotEmpty) {
         selectedPetId = pet['id'];
@@ -118,29 +110,35 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
       return;
     }
 
-    print("ssss = " );
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? sessionId = prefs.getString('JSESSIONID');
+
+    final request = http.Request(
+      'POST',
+      Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId'),
+    );
+
+    request.headers['Cookie'] = '$sessionId';
+    request.headers['Content-Type'] = 'application/json';
+
+    final payload = {
+      'reason': reasonController.text,
+      'date': "${selectedDate!.toIso8601String().split('T').first}", // yyyy-MM-dd format
+      'time': "${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}", // HH:mm format
+    };
+
+    request.body = jsonEncode(payload);
+
+    print("Payload: $payload");
     print('Session ID: $sessionId');
 
-    final response = await http.post(
-      Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId'),
-      headers: {
-        'Cookie': 'JSESSIONID=$sessionId',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'reason': reasonController.text,
-        'date': "${selectedDate!.toIso8601String().split('T').first}",
-        'time': "${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}",
-      }),
-    );
+    final response = await request.send();
 
     if (response.statusCode == 201) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đặt lịch thành công!')),
       );
-    } else {
+    } else {// Log response body
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi khi lưu lịch hẹn: ${response.statusCode}")),
       );

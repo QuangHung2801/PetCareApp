@@ -5,6 +5,8 @@ import '../PetProfile/AddPetProfile.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'PetDetailPage.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -12,15 +14,29 @@ void main() {
 class PetProfile {
   final int id;
   final String name;
+  final String gender;
+  final double weight;
+  final bool neutered;
+  final String birthday;
   final String imageUrl;
 
-  PetProfile({required this.id, required this.name, required this.imageUrl});
+  PetProfile({required this.id,
+    required this.name,
+    required this.gender,
+    required this.weight,
+    required this.neutered,
+    required this.birthday,
+    required this.imageUrl,});
 
   factory PetProfile.fromJson(Map<String, dynamic> json) {
     return PetProfile(
-      id: json['id']??0,
-      name: json['name']??'known',
-      imageUrl: json['imageUrl']??'',
+      id: json['id'],
+      name: json['name'],
+      gender: json['gender'],
+      weight: json['weight']?.toDouble() ?? 0.0, // Converts to double, default 0.0 if null
+      neutered: json['neutered'] ?? false, // Defaults to false if null
+      birthday: json['birthday'],
+      imageUrl: json['imageUrl'],
     );
   }
 }
@@ -303,49 +319,56 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 8),
           SizedBox(
-            height: 130, // Adjust height if needed
+            height: 130, // Điều chỉnh chiều cao nếu cần
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: petProfiles.length,
               itemBuilder: (context, index) {
                 final pet = petProfiles[index];
-                return Container(
-                  width: 120, // Square card with width = height
-                  margin: EdgeInsets.symmetric(horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 5,
-                        offset: Offset(0, 5),
+                return InkWell(
+                  onTap: () {
+                    // Chuyển đến trang chi tiết khi nhấn vào một thú cưng
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PetDetailPage(petId: pet.id),
                       ),
-                    ],
+                    );
+                  },
+                  child: Container(
+                    width: 120, // Thẻ hình vuông với width = height
+                    margin: EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          blurRadius: 5,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: NetworkImage('http://10.0.2.2:8888/${pet.imageUrl}'),
+                          radius: 35, // Điều chỉnh bán kính cho ảnh tròn
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          pet.name,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        backgroundImage: NetworkImage('http://10.0.2.2:8888/${pet.imageUrl}'),
-                        radius: 35, // Adjust radius for circular image
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        pet.name,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-
-                  ),
-
                 );
-
               },
             ),
           ),
-
         ],
       );
     }

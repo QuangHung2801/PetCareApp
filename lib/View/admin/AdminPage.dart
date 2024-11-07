@@ -35,7 +35,6 @@ class _AdminPageState extends State<AdminPage> {
   final List<Widget> _pages = [
     HomeScreen(),
     UserManagementScreen(),
-    AdminAppointmentsPage(),
     ReportScreen(),
     SettingsScreen(),
   ];

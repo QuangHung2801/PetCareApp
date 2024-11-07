@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookAppointmentPage extends StatefulWidget {
   @override
@@ -11,34 +12,57 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   final TextEditingController reasonController = TextEditingController();
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-  String? selectedPet = "Chó Husky";
+  String? selectedPet;
 
-  // Danh sách thú cưng
-  final List<String> pets = ["Chó Husky", "Mèo Anh lông ngắn", "Chim Vẹt"];
+  List<Map<String, dynamic>> pets = [];
 
-  Future<void> bookAppointment() async {
-    final url = Uri.parse('http://10.0.2.2:8888/api/appointments');
+  @override
+  void initState() {
+    super.initState();
+    fetchPets();
+  }
+
+  // Fetch pets from the API
+  Future<void> fetchPets() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+    print('User ID: $userId');// Retrieve the stored user ID
+    String? sessionId = prefs.getString('JSESSIONID');
+    print('Session ID: $sessionId');
+
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Người dùng chưa đăng nhập!")),
+      );
+      return;
+    }
 
     final response = await http.post(
-      url,
+      Uri.parse('http://10.0.2.2:8888/api/pet/all'),
       headers: {
+        'Cookie': 'JSESSIONID=$sessionId',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'pet': selectedPet,
-        'date': "${selectedDate!.toIso8601String().split('T').first}",
-        'time': "${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}",
-        'reason': reasonController.text,
-      }),
+      body: jsonEncode({'userId': userId}),
     );
 
     if (response.statusCode == 200) {
-      print("Lịch hẹn đã được lưu thành công!");
+      final List<dynamic> petList = jsonDecode(response.body);
+      setState(() {
+        pets = petList.map((pet) => {'id': pet['id'], 'name': pet['name']}).toList();
+        if (pets.isNotEmpty) {
+          selectedPet = pets[0]['name'];
+        }
+      });
     } else {
-      print("Lỗi khi lưu lịch hẹn: ${response.statusCode}");
+      print('Failed to load pet profiles: ${response.statusCode}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi khi lấy danh sách thú cưng: ${response.statusCode}")),
+      );
     }
   }
 
+  // Select date for appointment
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -53,6 +77,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
+  // Select time for appointment
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -62,6 +87,63 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
       setState(() {
         selectedTime = picked;
       });
+    }
+  }
+
+  // Book appointment with selected details
+  Future<void> bookAppointment() async {
+    if (selectedPet == null || selectedDate == null || selectedTime == null || reasonController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng điền đầy đủ thông tin")),
+      );
+      return;
+    }
+
+    // Lấy id của thú cưng đã chọn
+    int? selectedPetId;
+    if (pets.isNotEmpty) {
+      final pet = pets.firstWhere(
+            (pet) => pet['name'] == selectedPet,
+        orElse: () => {}, // Return an empty map if no pet is found
+      );
+      if (pet.isNotEmpty) {
+        selectedPetId = pet['id'];
+      }
+    }
+
+    if (selectedPetId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không tìm thấy thú cưng đã chọn")),
+      );
+      return;
+    }
+
+    print("ssss = " );
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? sessionId = prefs.getString('JSESSIONID');
+    print('Session ID: $sessionId');
+
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId'),
+      headers: {
+        'Cookie': 'JSESSIONID=$sessionId',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'reason': reasonController.text,
+        'date': "${selectedDate!.toIso8601String().split('T').first}",
+        'time': "${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}",
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đặt lịch thành công!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi khi lưu lịch hẹn: ${response.statusCode}")),
+      );
     }
   }
 
@@ -77,65 +159,49 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Chọn thú cưng", style: TextStyle(fontSize: 16)),
-            DropdownButton<String>(
+            Text("Chọn thú cưng", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            pets.isEmpty
+                ? Center(child: CircularProgressIndicator())
+                : DropdownButton<String>(
               value: selectedPet,
               isExpanded: true,
               onChanged: (String? newValue) {
                 setState(() {
-                  selectedPet = newValue;
+                  selectedPet = newValue!;
                 });
               },
-              items: pets.map<DropdownMenuItem<String>>((String pet) {
-                return DropdownMenuItem<String>(
-                  value: pet,
-                  child: Text(pet),
-                );
-              }).toList(),
+              items: pets.map<DropdownMenuItem<String>>(
+                    (pet) => DropdownMenuItem<String>(
+                  value: pet['name'],
+                  child: Text(pet['name']),
+                ),
+              ).toList(),
             ),
-            SizedBox(height: 16),
-            Text("Chọn ngày hẹn", style: TextStyle(fontSize: 16)),
+            SizedBox(height: 20),
+            Text("Lý do khám", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              decoration: InputDecoration(hintText: "Nhập lý do khám"),
+            ),
+            SizedBox(height: 20),
+            Text("Chọn ngày", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ListTile(
-              title: Text(
-                selectedDate != null
-                    ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                    : "Chọn ngày",
-              ),
+              title: Text(selectedDate == null ? 'Chưa chọn ngày' : "${selectedDate!.toLocal()}".split(' ')[0]),
               trailing: Icon(Icons.calendar_today),
               onTap: () => _selectDate(context),
             ),
-            SizedBox(height: 16),
-            Text("Chọn giờ hẹn", style: TextStyle(fontSize: 16)),
+            SizedBox(height: 20),
+            Text("Chọn giờ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ListTile(
-              title: Text(
-                selectedTime != null
-                    ? "${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}"
-                    : "Chọn giờ",
-              ),
+              title: Text(selectedTime == null ? 'Chưa chọn giờ' : "${selectedTime!.format(context)}"),
               trailing: Icon(Icons.access_time),
               onTap: () => _selectTime(context),
             ),
-            SizedBox(height: 16),
-            TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                labelText: "Lý do khám",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            SizedBox(height: 24),
-            Center(
-              child: ElevatedButton(
-                onPressed: bookAppointment,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text('Đặt lịch', style: TextStyle(fontSize: 18)),
-              ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: bookAppointment,
+              child: Text('Đặt lịch khám'),
             ),
           ],
         ),

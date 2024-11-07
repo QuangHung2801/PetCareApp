@@ -7,6 +7,9 @@ import 'appointment.dart';
 
 
 class PetCareManagement extends StatelessWidget {
+  late final int petId;
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

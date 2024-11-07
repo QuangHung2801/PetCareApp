@@ -49,11 +49,14 @@ public class PetProfile {
     @Size(max = 255, message = "Đường dẫn ảnh không được vượt quá 255 ký tự")
     private String  imageUrl;
 
+    @NotNull(message = "Loại thú cưng không được để trống")
+    @Size(max = 50, message = "Loại thú cưng không được vượt quá 50 ký tự")
+    private String type;
     // Constructor không tham số
     public PetProfile() {}
 
     // Constructor đầy đủ tham số
-    public PetProfile(Long id, String name, String description, LocalDate birthday, String gender, Boolean neutered, Double weight, String imageUrl) {
+    public PetProfile(Long id, String name, String description, LocalDate birthday, String gender, Boolean neutered, Double weight, String imageUrl, String type) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -62,6 +65,7 @@ public class PetProfile {
         this.neutered = neutered;
         this.weight = weight;
         this.imageUrl = imageUrl;
+        this.type = type;
     }
 
     // Getter và Setter
@@ -135,5 +139,13 @@ public class PetProfile {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

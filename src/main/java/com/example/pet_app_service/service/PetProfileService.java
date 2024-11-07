@@ -21,6 +21,9 @@ public class PetProfileService {
         return petProfileRepository.findByUserId(userId);
     }
 
+    public PetProfile findPetProfileById(Long petId) {
+        return petProfileRepository.findById(petId).orElse(null);
+    }
     public void savePetProfile(PetProfile petProfile) {
         petProfileRepository.save(petProfile);
     }

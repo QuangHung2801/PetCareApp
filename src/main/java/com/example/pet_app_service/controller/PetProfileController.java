@@ -6,6 +6,7 @@ import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.service.PetProfileService;
 import com.example.pet_app_service.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,18 @@ public class PetProfileController {
         }
         return ResponseEntity.ok(petProfiles);
     }
+
+    @GetMapping("/detail/{petId}")
+    public ResponseEntity<PetProfile> getPetDetail(@PathVariable Long petId) {
+        System.out.println("Received petId: " + petId);
+        PetProfile petProfile = petProfileService.findPetProfileById(petId);
+        System.out.println("fđf"+petProfile);
+        if (petProfile == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(petProfile);
+    }
+
 
     @PostMapping("/check-auth")
     public ResponseEntity<String> checkAuth() {
@@ -116,6 +129,7 @@ public class PetProfileController {
             petProfile.setNeutered(neutered);
             petProfile.setWeight(weight);
             petProfile.setImageUrl(imageUrl);
+            petProfile.setType(type);
             petProfile.setUser(currentUser); // Gán đối tượng User cho hồ sơ thú cưng
 
             // Lưu hồ sơ thú cưng
@@ -150,6 +164,72 @@ public class PetProfileController {
         try {
             petProfileService.deletePetProfileById(petId);
             return ResponseEntity.ok("Hồ sơ thú cưng đã được xóa thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi: " + e.getMessage());
+        }
+    }
+    @Transactional
+    @PutMapping("/edit/{petId}")
+    public ResponseEntity<?> editPetProfile(
+            @PathVariable Long petId,
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("birthday") String birthday,
+            @RequestParam("gender") String gender,
+            @RequestParam("neutered") boolean neutered,
+            @RequestParam("weight") double weight,
+            @RequestParam("type") String type,
+            @RequestParam(value = "image", required = false) MultipartFile image,  // Ảnh có thể không thay đổi
+            HttpServletRequest request) {
+
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+            }
+
+            String currentUserPhone = auth.getName(); // Sử dụng tên đăng nhập (số điện thoại)
+            User currentUser = userService.findByPhone(currentUserPhone);
+
+            if (currentUser == null) {
+                return ResponseEntity.status(403).body("Người dùng không được tìm thấy hoặc không xác thực");
+            }
+
+            // Tìm hồ sơ thú cưng cần sửa
+            PetProfile petProfile = petProfileService.findPetProfileById(petId);
+            if (petProfile == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hồ sơ thú cưng không tồn tại");
+            }
+
+            // Kiểm tra xem người dùng có quyền sửa hồ sơ này không
+            if (!petProfile.getUser().getId().equals(currentUser.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền sửa hồ sơ này");
+            }
+
+            // Chỉnh sửa thông tin hồ sơ thú cưng
+            petProfile.setName(name);
+            petProfile.setDescription(description);
+            petProfile.setBirthday(LocalDate.parse(birthday));
+            petProfile.setGender(gender);
+            petProfile.setNeutered(neutered);
+            petProfile.setType(type);
+            petProfile.setWeight(weight);
+
+            // Nếu có hình ảnh mới, thay thế hình ảnh cũ
+            if (image != null && !image.isEmpty()) {
+                String imageUrl = saveImage(image);
+                if (imageUrl != null) {
+                    petProfile.setImageUrl(imageUrl);
+                } else {
+                    return ResponseEntity.badRequest().body("Tải ảnh lên thất bại");
+                }
+            }
+
+            // Lưu lại hồ sơ thú cưng đã chỉnh sửa
+            petProfileService.savePetProfile(petProfile);
+
+            return ResponseEntity.ok("Hồ sơ thú cưng đã được chỉnh sửa thành công");
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi: " + e.getMessage());
         }

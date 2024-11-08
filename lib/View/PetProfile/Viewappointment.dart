@@ -156,7 +156,6 @@ class _AppointmentListState extends State<AppointmentList> {
             final appointment = appointments[index];
             return Card(
               child: ListTile(
-                title: Text("Khách Hàng: ${appointment.customer}"),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -177,7 +176,7 @@ class _AppointmentListState extends State<AppointmentList> {
 }
 
 class Appointment {
-  final String customer;
+
   final String service;
   final String time;
   final String petName;  // Thêm trường petType
@@ -186,7 +185,7 @@ class Appointment {
 
 
   Appointment({
-    required this.customer,
+
     required this.service,
     required this.time,
     required this.petName,
@@ -196,8 +195,7 @@ class Appointment {
 
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
-    return Appointment(
-      customer: json['customer'] ?? 'Chưa có thông tin khách hàng',  // Nếu customer là null, gán giá trị mặc định
+    return Appointment(// Nếu customer là null, gán giá trị mặc định
       service: json['service'] ?? 'Chưa có thông tin dịch vụ',       // Nếu service là null, gán giá trị mặc định
       time: json['time'] ?? 'Chưa có thời gian',                      // Nếu time là null, gán giá trị mặc định
       petName: json['petName'] ?? 'Chưa có tên thú cưng',

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -60,7 +60,7 @@ class _AppointmentPageState extends State<AppointmentPage> with SingleTickerProv
         children: [
           AppointmentList(status: "PENDING"),   // Sử dụng trạng thái cho từng tab
           AppointmentList(status: "CONFIRMED"),
-          AppointmentList(status: "CANCELLED"),
+          AppointmentList(status: "REJECTED"),
         ],
       ),
     );
@@ -86,46 +86,81 @@ class _AppointmentListState extends State<AppointmentList> {
 
   // Fetch appointments from backend
   Future<List<Appointment>> fetchAppointments() async {
-    final response = await http.get(
-      Uri.parse('http://10.0.2.2:8888/api/admin/appointments/${widget.status.toLowerCase()}'),
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.map((item) => Appointment.fromJson(item)).toList();
-    } else {
-      throw Exception('Failed to load appointments');
-    }
-  }
-
-  // Function to update appointment status (Confirm or Cancel)
-  Future<void> updateAppointmentStatus(String appointmentId, String status) async {
     try {
-      final response = await http.put(
-        Uri.parse('http://10.0.2.2:8888/api/admin/appointments/$appointmentId'),
-        body: json.encode({'status': status}),
-        headers: {'Content-Type': 'application/json'},
-      );
+      // Lấy sessionId từ SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? sessionId = prefs.getString('JSESSIONID');
 
+      if (sessionId == null) {
+        throw Exception('Session ID không tồn tại. Vui lòng đăng nhập lại.');
+      }
+
+      // Xây dựng URI cho yêu cầu API
+      final uri = Uri.parse('http://10.0.2.2:8888/api/admin/appointments/${widget.status.toLowerCase()}');
+
+      // Tạo một HTTP request
+      final request = http.Request('GET', uri);
+      request.headers['Cookie'] = '$sessionId';  // Gửi sessionId trong header Cookie
+      request.headers['Content-Type'] = 'application/json';  // Đặt Content-Type là application/json
+
+      // Gửi yêu cầu và nhận phản hồi
+      final response = await request.send();
+
+      // Kiểm tra mã trạng thái phản hồi
       if (response.statusCode == 200) {
-        setState(() {
-          appointments = fetchAppointments();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Status updated successfully')),
-        );
+        // Đọc body của response từ stream
+        final responseBody = await response.stream.bytesToString();
+        List<dynamic> data = json.decode(responseBody);
+
+        return data.map((item) => Appointment.fromJson(item)).toList();
       } else {
-        print("Failed with status code: ${response.statusCode}");
-        print("Response body: ${response.body}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update appointment status. Status code: ${response.statusCode}')),
-        );
+        // Nếu mã trạng thái không phải 200, throw một exception với thông báo lỗi
+        final errorResponse = await response.stream.bytesToString();
+        throw Exception('Error: ${response.statusCode}, Response body: $errorResponse');
       }
     } catch (e) {
-      print("Exception occurred: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating appointment status: $e')),
-      );
+      // Xử lý bất kỳ lỗi nào trong quá trình thực hiện yêu cầu
+      print('Lỗi trong quá trình gửi yêu cầu: $e');
+      rethrow;  // Ném lại lỗi để có thể xử lý ở nơi gọi
+    }
+  }
+  Future<void> updateAppointmentStatus(String appointmentId, String status) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? sessionId = prefs.getString('JSESSIONID');
+
+      if (sessionId == null) {
+        throw Exception('Session ID không tồn tại. Vui lòng đăng nhập lại.');
+      }
+
+      // URL chính xác cho lệnh PUT
+      final uri = Uri.parse('http://10.0.2.2:8888/api/admin/appointments/$appointmentId');
+
+      // Gửi request PUT với body JSON chứa status
+      final request = http.Request('PUT', uri);
+      request.headers.addAll({
+        'Cookie': '$sessionId',
+        'Content-Type': 'application/json',
+      });
+      request.body = jsonEncode({'status': status});
+
+// Gửi request và nhận response
+      final response = await http.Client().send(request);
+      final responseBody = await http.Response.fromStream(response);
+
+      // Kiểm tra mã trạng thái phản hồi
+      if (response.statusCode == 200) {
+        print('Cập nhật trạng thái thành công');
+        setState(() {
+          // Gọi fetchAppointments lại để cập nhật danh sách lịch hẹn
+          appointments = fetchAppointments();
+        });
+      } else {
+        throw Exception('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi trong quá trình gửi yêu cầu: $e');
+      rethrow;
     }
   }
 
@@ -169,7 +204,7 @@ class _AppointmentListState extends State<AppointmentList> {
                           TextButton(
                             onPressed: () {
                               // Update status to "CANCELLED"
-                              updateAppointmentStatus(appointment.id, "CANCELLED");
+                              updateAppointmentStatus(appointment.id, "REJECTED");
                             },
                             child: Text('Hủy'),
                           ),

@@ -13,12 +13,15 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   String? selectedPet;
+  String? selectedService;
   List<Map<String, dynamic>> pets = [];
+  List<Map<String, dynamic>> services = [];
 
   @override
   void initState() {
     super.initState();
     fetchPets();
+    fetchServices(); // Fetch services
   }
 
   Future<void> fetchPets() async {
@@ -58,6 +61,35 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
     }
   }
 
+  Future<void> fetchServices() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? sessionId = prefs.getString('JSESSIONID');
+
+    // Sử dụng phương thức GET để lấy danh sách dịch vụ
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8888/api/services/all'), // Cập nhật URL đúng
+      headers: {
+        'Cookie': 'JSESSIONID=$sessionId',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> serviceList = jsonDecode(response.body);
+      setState(() {
+        services = serviceList.map((service) => {'id': service['id'], 'name': service['name']}).toList();
+        if (services.isNotEmpty) {
+          selectedService = services[0]['name'];
+        }
+      });
+    } else {
+      print('Failed to load services: ${response.statusCode}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi khi lấy danh sách dịch vụ: ${response.statusCode}")),
+      );
+    }
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -85,7 +117,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   }
 
   Future<void> bookAppointment() async {
-    if (selectedPet == null || selectedDate == null || selectedTime == null || reasonController.text.isEmpty) {
+    if (selectedPet == null || selectedDate == null || selectedTime == null || reasonController.text.isEmpty || selectedService == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Vui lòng điền đầy đủ thông tin")),
       );
@@ -110,12 +142,32 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
       return;
     }
 
+    int? selectedServiceId;
+    if (services.isNotEmpty) {
+      final service = services.firstWhere(
+            (service) => service['name'] == selectedService,
+        orElse: () => {},
+      );
+      if (service.isNotEmpty) {
+        selectedServiceId = service['id'];
+      }
+    }
+    print('Selected Service ID: $selectedServiceId');
+
+
+    if (selectedServiceId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không tìm thấy dịch vụ đã chọn")),
+      );
+      return;
+    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? sessionId = prefs.getString('JSESSIONID');
 
     final request = http.Request(
       'POST',
-      Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId'),
+      Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId/$selectedServiceId'),
     );
 
     request.headers['Cookie'] = '$sessionId';
@@ -127,10 +179,8 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
       'time': "${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}", // HH:mm format
     };
 
-    request.body = jsonEncode(payload);
 
-    print("Payload: $payload");
-    print('Session ID: $sessionId');
+    request.body = jsonEncode(payload);
 
     final response = await request.send();
 
@@ -139,7 +189,10 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
         SnackBar(content: Text('Đặt lịch thành công!')),
       );
       Navigator.pop(context);
-    } else {// Log response body
+    } else {
+      response.stream.transform(utf8.decoder).listen((value) {
+        print('Error response body: $value');
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi khi lưu lịch hẹn: ${response.statusCode}")),
       );
@@ -177,6 +230,25 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               ).toList(),
             ),
             SizedBox(height: 20),
+            Text("Chọn dịch vụ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            services.isEmpty
+                ? Center(child: CircularProgressIndicator())
+                : DropdownButton<String>(
+              value: selectedService,
+              isExpanded: true,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedService = newValue!;
+                });
+              },
+              items: services.map<DropdownMenuItem<String>>(
+                    (service) => DropdownMenuItem<String>(
+                  value: service['name'],
+                  child: Text(service['name']),
+                ),
+              ).toList(),
+            ),
+            SizedBox(height: 20),
             Text("Lý do khám", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextField(
               controller: reasonController,
@@ -198,9 +270,11 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
               onTap: () => _selectTime(context),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: bookAppointment,
-              child: Text('Đặt lịch khám'),
+            Center(
+              child: ElevatedButton(
+                onPressed: bookAppointment,
+                child: Text('Đặt lịch'),
+              ),
             ),
           ],
         ),

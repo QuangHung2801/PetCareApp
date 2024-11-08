@@ -4,7 +4,7 @@ import 'HomeScreen.dart';
 import 'OrderManagementScreen.dart';
 import 'ReportScreen.dart';
 import 'SettingsScreen.dart';
-import 'UserManagementScreen.dart';
+import 'PetServiceScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -34,7 +34,7 @@ class _AdminPageState extends State<AdminPage> {
   // List of pages for the bottom navigation bar
   final List<Widget> _pages = [
     HomeScreen(),
-    UserManagementScreen(),
+    PetServiceScreen(),
     AppointmentPage(),
     ReportScreen(),
     SettingsScreen(),

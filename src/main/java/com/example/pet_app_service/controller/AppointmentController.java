@@ -2,6 +2,8 @@ package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.Appointment;
 import com.example.pet_app_service.entity.PetProfile;
+import com.example.pet_app_service.entity.PetService;
+import com.example.pet_app_service.repository.ServiceRepository;
 import com.example.pet_app_service.service.AppointmentService;
 import com.example.pet_app_service.service.PetProfileService;
 import com.example.pet_app_service.service.UserService;
@@ -12,11 +14,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
+    @Autowired
+    private ServiceRepository serviceRepository;
 
     @Autowired
     private AppointmentService appointmentService;
@@ -27,14 +32,19 @@ public class AppointmentController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/book/{petId}")
-    public ResponseEntity<?> createAppointment(@RequestBody Appointment appointmentRequest, @PathVariable Long petId, HttpServletRequest servletRequest) {
+    @PostMapping("/book/{petId}/{serviceId}")
+    public ResponseEntity<?> createAppointment(@RequestBody Appointment appointmentRequest, @PathVariable Long petId,
+                                               @PathVariable Long serviceId, HttpServletRequest servletRequest) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth instanceof AnonymousAuthenticationToken) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
         }
-
+        PetService selectedService = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Dịch vụ không tồn tại"));
+        if (selectedService == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("dich vu khong tim thay.");
+        }
         String currentUserPhone = auth.getName();
         var currentUser = userService.findByPhone(currentUserPhone);
 
@@ -55,6 +65,7 @@ public class AppointmentController {
         appointment.setReason(appointmentRequest.getReason());
         appointment.setDate(appointmentRequest.getDate());
         appointment.setTime(appointmentRequest.getTime());
+        appointment.setService(selectedService);
         appointment.setStatus(Appointment.Status.PENDING);
 
         appointmentService.saveAppointment(appointment);

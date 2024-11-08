@@ -1,6 +1,7 @@
 package com.example.pet_app_service.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -23,6 +24,10 @@ public class Appointment {
     private String reason;
 
     @ManyToOne
+    @JoinColumn(name = "service_id", nullable = false) // Liên kết với bảng dịch vụ
+    private PetService service;
+
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -37,6 +42,14 @@ public class Appointment {
 
     public enum Status {
         PENDING, CONFIRMED, REJECTED
+    }
+
+    public PetService getService() {
+        return service;
+    }
+
+    public void setService(PetService service) {
+        this.service = service;
     }
 
     public Status getStatus() {
@@ -102,5 +115,44 @@ public class Appointment {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public String getUserName() {
+        return user != null ? user.getName() : "Chưa có tên người dùng";
+    }
+
+    public String getPetName() {
+        return petProfile != null ? petProfile.getName() : "Chưa có loại thú cưng";
+    }
+
+    public String getPetType() {
+        return petProfile != null ? petProfile.getType() : "Chưa có loại thú cưng";
+    }
+    public Long getServiceId() {
+        return service != null ? service.getId() : null;
+    }
+
+    public String getPetServiceName() {
+        return service != null ? service.getName() : null;
+    }
+    // Ensure that the JSON response includes the user name and pet name
+    @JsonProperty("userName")
+    public String getUserNameJson() {
+        return getUserName();
+    }
+
+    @JsonProperty("petName")
+    public String getPetNameJson() {
+        return getPetName();
+    }
+
+    @JsonProperty("petType")
+    public String getPetTypeJson() {
+        return getPetType();
+    }
+
+    @JsonProperty("service")
+    public String getPetServiceNameJson() {
+        return getPetServiceName();
     }
 }

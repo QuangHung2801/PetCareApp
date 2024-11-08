@@ -184,13 +184,14 @@ class _AppointmentListState extends State<AppointmentList> {
             final appointment = appointments[index];
             return Card(
               child: ListTile(
-                title: Text("Khách Hàng: ${appointment.customer}"),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(appointment.service, style: TextStyle(fontSize: 12)),
-                    Text(appointment.time, style: TextStyle(fontSize: 12)),
-                    // Display action buttons based on appointment status
+                    Text('Dịch vụ: ${appointment.service}', style: TextStyle(fontSize: 12)),
+                    Text('Thời gian: ${appointment.time}', style: TextStyle(fontSize: 12)),
+                    Text('Tên thú cưng: ${appointment.petName}', style: TextStyle(fontSize: 12)),
+                    Text('Loại thú cưng: ${appointment.petType}', style: TextStyle(fontSize: 12)),
+                    Text('Tên khách hàng: ${appointment.userName}', style: TextStyle(fontSize: 12)),
                     if (widget.status == "PENDING") ...[
                       Row(
                         children: [
@@ -224,18 +225,26 @@ class _AppointmentListState extends State<AppointmentList> {
 
 class Appointment {
   final String id;
-  final String customer;
+
   final String service;
   final String time;
+  final String petName;  // Thêm trường petType
+  final String userName;
+  final String petType;
 
-  Appointment({required this.id, required this.customer, required this.service, required this.time});
+  Appointment({required this.id, required this.service, required this.time,required this.petName,
+    required this.userName,
+    required this.petType,});
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
       id: json['id'].toString(),  // Ensure there's an ID for each appointment
-      customer: json['customer'] ?? 'Chưa có thông tin khách hàng',
+
       service: json['service'] ?? 'Chưa có thông tin dịch vụ',
-      time: json['time'] ?? 'Chưa có thời gian',
+      time: json['time'] ?? 'Chưa có thời gian', // Nếu time là null, gán giá trị mặc định
+      petName: json['petName'] ?? 'Chưa có tên thú cưng',
+      petType: json['petType'] ?? 'chua co Loai thu cung',
+      userName: json['userName'] ?? 'Chưa có tên khách hàng',
     );
   }
 }

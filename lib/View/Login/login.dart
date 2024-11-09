@@ -96,7 +96,7 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/img.png', height: 100),
+                Image.asset('assets/logo.jpg', height: 150),
                 SizedBox(height: 20),
                 // Phone Number Input
                 TextField(

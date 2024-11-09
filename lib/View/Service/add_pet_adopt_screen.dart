@@ -16,7 +16,7 @@ class _PostPetPageState extends State<PostPetPage> {
   final TextEditingController _contactInfoController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
-  String _selectedType = 'Dog'; // Default type is Dog
+  String _selectedType = 'chó'; // Default type is Dog
   File? _image; // Variable to hold the selected image
   bool _isLoading = false; // Flag to track loading state
 
@@ -97,7 +97,7 @@ class _PostPetPageState extends State<PostPetPage> {
     _weightController.clear();
     _birthDateController.clear();
     setState(() {
-      _selectedType = 'Dog'; // Reset to default type
+      _selectedType = 'chó'; // Reset to default type
       _image = null; // Clear selected image
     });
   }
@@ -152,7 +152,7 @@ class _PostPetPageState extends State<PostPetPage> {
                     _selectedType = newValue!;
                   });
                 },
-                items: <String>['Dog', 'Cat', 'Other']
+                items: <String>['chó', 'mèo', 'khác']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,

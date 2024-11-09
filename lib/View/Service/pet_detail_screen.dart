@@ -1,93 +1,209 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-class PetDetailScreen extends StatelessWidget {
+class PetDetailScreen extends StatefulWidget {
   final Map<String, dynamic> pet;
+  final String currentUserId;
 
-  PetDetailScreen({required this.pet});
+  PetDetailScreen({required this.pet, required this.currentUserId});
+
+  @override
+  _PetDetailScreenState createState() => _PetDetailScreenState();
+}
+
+class _PetDetailScreenState extends State<PetDetailScreen> {
+  final String baseUrl = 'http://10.0.2.2:8888/api/adoption';
+  bool isAdopted = false; // Trạng thái đăng ký nhận nuôi
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkAdoptionStatus();  // Kiểm tra lại trạng thái khi màn hình được tạo lại
+  }
+
+  Future<String?> getSessionId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('JSESSIONID');
+  }
+
+  // Kiểm tra xem người dùng đã đăng ký nhận nuôi chưa
+  Future<void> _checkAdoptionStatus() async {
+    String? sessionId = await getSessionId();
+    if (sessionId == null) return;
+
+    final String petId = widget.pet['id']?.toString() ?? '';
+    final url = Uri.parse('$baseUrl/status/$petId');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Cookie': '$sessionId',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        isAdopted = data['isAdopted'] ?? false;
+      });
+    }
+  }
+
+  // Đăng ký nhận nuôi
+  Future<void> _registerAdoption(BuildContext context) async {
+    String? sessionId = await getSessionId();
+    if (sessionId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không tìm thấy Session ID! Vui lòng đăng nhập lại.')),
+      );
+      return;
+    }
+
+    final String petId = widget.pet['id']?.toString() ?? '';
+    final url = Uri.parse('$baseUrl/adopt/$petId');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': '$sessionId',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        isAdopted = true; // Đã đăng ký nhận nuôi
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bắt đầu quá trình nhận nuôi!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đăng ký nhận nuôi thất bại!')),
+      );
+    }
+  }
+
+  // Hoàn tất nhận nuôi
+  Future<void> _completeAdoption(BuildContext context) async {
+    String? sessionId = await getSessionId();
+    if (sessionId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không tìm thấy Session ID! Vui lòng đăng nhập lại.')),
+      );
+      return;
+    }
+
+    final String petId = widget.pet['id']?.toString() ?? '';
+    final response = await http.put(
+      Uri.parse('$baseUrl/complete/$petId'),
+      headers: {
+        'Cookie': '$sessionId',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hoàn tất nhận nuôi thành công!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể hoàn tất nhận nuôi!')),
+      );
+    }
+  }
+
+  // Hủy nhận nuôi
+  Future<void> _cancelAdoption(BuildContext context) async {
+    String? sessionId = await getSessionId();
+    if (sessionId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không tìm thấy Session ID! Vui lòng đăng nhập lại.')),
+      );
+      return;
+    }
+
+    final String petId = widget.pet['id']?.toString() ?? '';
+    final response = await http.put(
+      Uri.parse('$baseUrl/cancel/$petId'),
+      headers: {
+        'Cookie': '$sessionId',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        isAdopted = false; // Hủy nhận nuôi
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hủy đăng ký nhận nuôi thành công!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hủy đăng ký nhận nuôi thất bại!')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final String posterUserId = widget.pet['posterUserId']?.toString() ?? '';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(pet['name']),
+        title: Text(widget.pet['name']),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(pet['image'], width: double.infinity, height: 250, fit: BoxFit.cover),
-            SizedBox(height: 16.0),
+            Image.network(
+              widget.pet['imageUrl'] ?? 'assets/no_image.png',
+              width: double.infinity,
+              height: 250,
+              fit: BoxFit.cover,
+            ),
+            SizedBox(height: 16),
             Text(
-              pet['name'],
+              widget.pet['name'],
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8.0),
-            Text('Giống: ${pet['breed']}', style: TextStyle(fontSize: 18)),
-            Text('Tuổi: ${pet['age']}'),
-            Text('Giới tính: ${pet['gender']}'),
-            SizedBox(height: 16.0),
-            Text(
-              'Tính cách: Rất thân thiện và hòa đồng với trẻ em.',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16.0),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _showAdoptionForm(context);
-                },
-                child: Text('Đăng Ký Nhận Nuôi'),
-              ),
+            Text('Loại: ${widget.pet['type']}'),
+            Text('Cân nặng: ${widget.pet['weight']} kg'),
+            Text('Mô tả: ${widget.pet['description']}'),
+            Text('Số điện thoại liên hệ: ${widget.pet['contactPhone']}'),
+            SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (widget.currentUserId != posterUserId)
+                  ElevatedButton(
+                    onPressed: isAdopted ? null : () => _registerAdoption(context),
+                    child: Text(isAdopted ? 'Đã Đăng Ký' : 'Đăng Ký Nhận Nuôi'),
+                  ),
+                if (widget.currentUserId == posterUserId) ...[
+                  ElevatedButton(
+                    onPressed: () => _completeAdoption(context),
+                    child: Text('Hoàn Tất'),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => _cancelAdoption(context),
+                    child: Text('Hủy'),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
       ),
-    );
-  }
-
-  // Hiển thị Form Đăng Ký Nhận Nuôi
-  void _showAdoptionForm(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Đăng Ký Nhận Nuôi ${pet['name']}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(labelText: 'Họ và Tên'),
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'Số Điện Thoại'),
-                keyboardType: TextInputType.phone,
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Đăng ký nhận nuôi thành công!')),
-                );
-              },
-              child: Text('Xác Nhận'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Hủy'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

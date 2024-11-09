@@ -124,7 +124,7 @@ class PetDetailPage extends StatelessWidget {
     );
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
+      final json = jsonDecode(utf8.decode(response.bodyBytes));
       return PetProfile.fromJson(json);
     } else {
       throw Exception('Failed to load pet detail');

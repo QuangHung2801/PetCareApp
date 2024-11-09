@@ -69,7 +69,7 @@ public class AuthController {
             response.put("message", "Đăng nhập thành công");
             response.put("userId", user.getId()); // Include userId in the response
             response.put("phone", user.getPhone());
-            response.put("name", user.getName());
+//            response.put("name", user.getName());
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

@@ -68,6 +68,13 @@ class LoginScreen extends StatelessWidget {
         await prefs.setString('userId', userId); // Lưu trực tiếp nếu đã là chuỗi
         print('User ID saved: $userId');
       }
+      if (responseBody.containsKey('name')) {
+        String name = responseBody['name'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('name', name); // Lưu name vào SharedPreferences
+        print('User Name saved: $name');
+      }
+
       print('Login successful: ${response.body}');
       if (responseBody['phone'] == 'admin') {
         Navigator.pushReplacement(

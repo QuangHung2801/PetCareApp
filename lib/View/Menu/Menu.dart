@@ -59,6 +59,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<PetProfile> petProfiles = [];
   bool isLoading = true;
+  String? username;
   @override
   void initState() {
     super.initState();
@@ -70,8 +71,12 @@ class _HomePageState extends State<HomePage> {
       isLoading = true;
     });
 
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     String? userId = prefs.getString('userId');
+    username = prefs.getString('name');
+    print('name: $username');
     print('User ID: $userId');// Retrieve the stored user ID
     String? sessionId = prefs.getString('JSESSIONID');
     print('Session ID: $sessionId');
@@ -104,6 +109,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _logout() async {
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? sessionId = prefs.getString('sessionId');
 
@@ -134,6 +140,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Menu"),
@@ -169,6 +176,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildUserProfile() {
+
     return Row(
       children: [
         CircleAvatar(
@@ -179,7 +187,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'user',
+              username ?? 'Tên người dùng',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text('Vào trang cá nhân'),

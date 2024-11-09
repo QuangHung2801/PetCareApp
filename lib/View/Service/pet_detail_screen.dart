@@ -20,38 +20,28 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
     _checkAdoptionStatus();  // Kiểm tra lại trạng thái khi màn hình được tạo lại
   }
 
+  // Lấy Session ID từ SharedPreferences
   Future<String?> getSessionId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('JSESSIONID');
   }
 
+  // Lưu trạng thái nhận nuôi vào SharedPreferences
+  Future<void> _saveAdoptionStatus(bool status) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('adopted_${widget.pet['id']}', status);
+  }
+
   // Kiểm tra xem người dùng đã đăng ký nhận nuôi chưa
   Future<void> _checkAdoptionStatus() async {
-    String? sessionId = await getSessionId();
-    if (sessionId == null) return;
-
-    final String petId = widget.pet['id']?.toString() ?? '';
-    final url = Uri.parse('$baseUrl/status/$petId');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Cookie': '$sessionId',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? adoptionStatus = prefs.getBool('adopted_${widget.pet['id']}');
+    if (adoptionStatus != null) {
       setState(() {
-        isAdopted = data['isAdopted'] ?? false;
+        isAdopted = adoptionStatus;
       });
     }
   }
@@ -80,9 +70,11 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
       setState(() {
         isAdopted = true; // Đã đăng ký nhận nuôi
       });
+      _saveAdoptionStatus(true); // Lưu trạng thái đã nhận nuôi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Bắt đầu quá trình nhận nuôi!')),
       );
+      print('isAdopted: $isAdopted');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đăng ký nhận nuôi thất bại!')),
@@ -103,15 +95,14 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     final String petId = widget.pet['id']?.toString() ?? '';
     final response = await http.put(
       Uri.parse('$baseUrl/complete/$petId'),
-      headers: {
-        'Cookie': '$sessionId',
-      },
+      headers: {'Cookie': '$sessionId'},
     );
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Hoàn tất nhận nuôi thành công!')),
       );
+      _saveAdoptionStatus(true); // Lưu trạng thái đã nhận nuôi
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Không thể hoàn tất nhận nuôi!')),
@@ -132,15 +123,14 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     final String petId = widget.pet['id']?.toString() ?? '';
     final response = await http.put(
       Uri.parse('$baseUrl/cancel/$petId'),
-      headers: {
-        'Cookie': '$sessionId',
-      },
+      headers: {'Cookie': '$sessionId'},
     );
 
     if (response.statusCode == 200) {
       setState(() {
         isAdopted = false; // Hủy nhận nuôi
       });
+      _saveAdoptionStatus(false); // Lưu trạng thái hủy nhận nuôi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Hủy đăng ký nhận nuôi thành công!')),
       );

@@ -59,7 +59,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<PetProfile> petProfiles = [];
   bool isLoading = true;
-  String? username;
+  // String? username;
   @override
   void initState() {
     super.initState();
@@ -75,8 +75,8 @@ class _HomePageState extends State<HomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     String? userId = prefs.getString('userId');
-    username = prefs.getString('name');
-    print('name: $username');
+    // username = prefs.getString('name');
+    // print('name: $username');
     print('User ID: $userId');// Retrieve the stored user ID
     String? sessionId = prefs.getString('JSESSIONID');
     print('Session ID: $sessionId');
@@ -187,7 +187,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              username ?? 'Tên người dùng',
+             "User",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text('Vào trang cá nhân'),

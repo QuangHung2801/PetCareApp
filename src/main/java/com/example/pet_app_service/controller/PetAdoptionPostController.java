@@ -1,6 +1,7 @@
 package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.PetAdoptionPost;
+import com.example.pet_app_service.entity.PetProfile;
 import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.service.PetAdoptionPostService;
 import com.example.pet_app_service.service.UserService;
@@ -42,6 +43,10 @@ public class PetAdoptionPostController {
     @GetMapping("/all")
     public ResponseEntity<List<PetAdoptionPost>> getAllAdoptionPosts() {
         List<PetAdoptionPost> posts = petAdoptionPostService.getAllAdoptionPosts();
+        for (PetAdoptionPost pet : posts) {
+            pet.setImageUrl("http://10.0.2.2:8888/"+pet.getImageUrl());
+        }
+
         return ResponseEntity.ok(posts);
     }
 
@@ -61,6 +66,7 @@ public class PetAdoptionPostController {
             @RequestParam("weight") Double weight,
             @RequestParam("birthDate") String birthDate,
             @RequestParam("description") String description,
+            @RequestParam("contactInfo") String contactInfo,
             @RequestParam("image") MultipartFile image,
             @RequestParam(value = "adopted", defaultValue = "false") boolean adopted,
             HttpServletRequest request) {
@@ -102,6 +108,7 @@ public class PetAdoptionPostController {
             post.setBirthDate(birthDateParsed);
             post.setDescription(description);
             post.setImageUrl(imageUrl);
+            post.setContactPhone(contactInfo);
             post.setUser(currentUser);
             post.setAdopted(adopted);  // Thêm trạng thái adopted
 
@@ -131,15 +138,68 @@ public class PetAdoptionPostController {
         return filename;  // Trả về tên ảnh đã lưu
     }
 
-    // Cập nhật trạng thái adopted của bài đăng
-    @PutMapping("/update/{postId}")
-    public ResponseEntity<?> updateAdoptedStatus(@PathVariable Long postId, @RequestParam("adopted") boolean adopted) {
+    // Đăng ký nhận nuôi
+    @PostMapping("/adopt/{postId}")
+    public ResponseEntity<?> registerAdoption(
+            @PathVariable Long postId,
+            HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+        }
+        // Lấy thông tin người dùng đã đăng nhập
+        String currentUserPhone = auth.getName();
+        User currentUser = userService.findByPhone(currentUserPhone);
+
         PetAdoptionPost post = petAdoptionPostService.findAdoptionPostById(postId);
         if (post == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found.");
         }
-        post.setAdopted(adopted);
+
+        if (post.isAdopted()) {
+            return ResponseEntity.badRequest().body("Pet is already adopted.");
+        }
+
+        // Cập nhật trạng thái quá trình nhận nuôi
+        post.setAdopted(true);
         petAdoptionPostService.saveAdoptionPost(post);
-        return ResponseEntity.ok("Adoption status updated successfully.");
+
+        return ResponseEntity.ok("Adoption process started successfully.");
+    }
+
+    // Hoàn tất nhận nuôi
+    @PutMapping("/complete/{postId}")
+    public ResponseEntity<?> completeAdoption(@PathVariable Long postId) {
+        PetAdoptionPost post = petAdoptionPostService.findAdoptionPostById(postId);
+        if (post == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found.");
+        }
+
+        post.setAdopted(true); // Cập nhật đã nhận nuôi
+        petAdoptionPostService.saveAdoptionPost(post);
+        return ResponseEntity.ok("Adoption completed successfully.");
+    }
+
+    // Hủy đăng ký nhận nuôi
+    @PutMapping("/cancel/{postId}")
+    public ResponseEntity<?> cancelAdoption(@PathVariable Long postId) {
+        PetAdoptionPost post = petAdoptionPostService.findAdoptionPostById(postId);
+        if (post == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found.");
+        }
+
+        post.setAdopted(false); // Trả lại trạng thái chưa nhận nuôi
+        petAdoptionPostService.saveAdoptionPost(post);
+        return ResponseEntity.ok("Adoption process cancelled.");
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PetAdoptionPost>> getPostsByUser(@PathVariable Long userId) {
+        List<PetAdoptionPost> posts = petAdoptionPostService.getPostsByUser(userId);
+        for (PetAdoptionPost pet : posts) {
+            pet.setImageUrl("http://10.0.2.2:8888/" + pet.getImageUrl());
+        }
+
+        return ResponseEntity.ok(posts);
     }
 }

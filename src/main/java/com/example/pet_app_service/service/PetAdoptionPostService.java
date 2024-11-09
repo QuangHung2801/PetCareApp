@@ -24,6 +24,9 @@ public class PetAdoptionPostService {
     public List<PetAdoptionPost> getAllAdoptionPosts() {
         return petAdoptionPostRepository.findAll();
     }
+    public List<PetAdoptionPost> getPostsByUser(Long userId) {
+        return petAdoptionPostRepository.findByUserId(userId);
+    }
 
     public PetAdoptionPost findAdoptionPostById(Long id) {
         return petAdoptionPostRepository.findById(id).orElse(null);

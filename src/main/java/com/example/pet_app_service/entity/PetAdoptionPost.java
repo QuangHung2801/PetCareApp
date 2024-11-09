@@ -3,6 +3,7 @@ package com.example.pet_app_service.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -40,4 +41,8 @@ public class PetAdoptionPost {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^[0-9]{10,15}$", message = "Số điện thoại không hợp lệ") // Chỉ chấp nhận số điện thoại có từ 10 đến 15 chữ số
+    private String contactPhone;
 }

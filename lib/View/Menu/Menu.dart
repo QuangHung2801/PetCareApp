@@ -5,6 +5,7 @@ import '../PetProfile/AddPetProfile.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'PartnerRegistrationPage.dart';
 import 'PetDetailPage.dart';
 
 void main() {
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Pet App',
       home: HomePage(),
+
     );
   }
 }
@@ -247,9 +249,22 @@ class _HomePageState extends State<HomePage> {
       children: [
         _buildMenuOptionCard(
           icon: Icons.redeem,
-          title: "Đổi thưởng",
-          subtitle: "Rất nhiều phần quà đang chờ bạn đổi thưởng!",
-          trailing: "0 Xu",
+          title: "Đăng ký tài khoản đối tác",
+        onTap: () async {
+          // Điều hướng đến trang đăng ký đối tác
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PartnerRegistrationForm(),
+            ),
+          );
+          if (result != null && result == 'success') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Đăng ký đối tác thành công!')),
+            );
+        }
+
+          }
         ),
         SizedBox(height: 16),
         _buildMenuOptionCard(
@@ -270,46 +285,53 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMenuOptionCard({required IconData icon, required String title, String? subtitle, String? trailing}) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 36, color: Colors.orange),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                if (subtitle != null) ...[
-                  SizedBox(height: 4),
-                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey)),
-                ]
-              ],
+  Widget _buildMenuOptionCard({required IconData icon, required String title, String? subtitle, String? trailing ,VoidCallback? onTap}) {
+
+    return InkWell( // Sử dụng InkWell hoặc GestureDetector để bắt sự kiện nhấn
+      onTap: onTap, // Gọi hàm onTap khi người dùng nhấn vào
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3),
             ),
-          ),
-          if (trailing != null)
-            Text(
-              trailing,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 36, color: Colors.orange),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  if (subtitle != null) ...[
+                    SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ]
+                ],
+              ),
             ),
-        ],
+            if (trailing != null)
+              Text(
+                trailing,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+          ],
+        ),
       ),
     );
   }

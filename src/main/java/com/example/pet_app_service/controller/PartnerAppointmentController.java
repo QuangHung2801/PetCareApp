@@ -1,7 +1,6 @@
 package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.Appointment;
-import com.example.pet_app_service.entity.PartnerInfo;
 import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.repository.AppointmentRepository;
 import com.example.pet_app_service.repository.PartnerInfoRepository;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/admin/appointments")
-public class AdminAppointmentController {
+@RequestMapping("/api/partner/appointments")
+public class PartnerAppointmentController {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
@@ -41,6 +39,12 @@ public class AdminAppointmentController {
         return userService.findByPhone(currentUserPhone);
     }
 
+    // Kiểm tra vai trò Partner
+    private boolean isPartner(User user) {
+        return user.getRoles().stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase("PARTNER"));
+    }
+
     @GetMapping("/pending")
     public ResponseEntity<?> getPendingAppointments() {
         User currentUser = getAuthenticatedUser();
@@ -48,20 +52,11 @@ public class AdminAppointmentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
         }
 
-        List<Appointment> appointments;
-
-        // Kiểm tra vai trò Admin
-        boolean isAdmin = currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName().equalsIgnoreCase("ADMIN"));
-
-        if (isAdmin) {
-            // Admin: lấy toàn bộ lịch hẹn đang chờ xử lý
-            appointments = appointmentRepository.findByStatus(Appointment.Status.PENDING);
-        } else {
-            // User: chỉ lấy lịch hẹn của chính người dùng
-            appointments = appointmentRepository.findByStatusAndUser(Appointment.Status.PENDING, currentUser);
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can view pending appointments.");
         }
 
+        List<Appointment> appointments = appointmentRepository.findByStatus(Appointment.Status.PENDING);
         return ResponseEntity.ok(appointments);
     }
 
@@ -72,20 +67,11 @@ public class AdminAppointmentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
         }
 
-        List<Appointment> appointments;
-
-        // Kiểm tra vai trò Admin
-        boolean isAdmin = currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName().equalsIgnoreCase("ADMIN"));
-
-        if (isAdmin) {
-            // Admin: lấy toàn bộ lịch hẹn đã được xác nhận
-            appointments = appointmentRepository.findByStatus(Appointment.Status.CONFIRMED);
-        } else {
-            // User: chỉ lấy lịch hẹn của chính người dùng
-            appointments = appointmentRepository.findByStatusAndUser(Appointment.Status.CONFIRMED, currentUser);
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can view confirmed appointments.");
         }
 
+        List<Appointment> appointments = appointmentRepository.findByStatus(Appointment.Status.CONFIRMED);
         return ResponseEntity.ok(appointments);
     }
 
@@ -96,22 +82,14 @@ public class AdminAppointmentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
         }
 
-        List<Appointment> appointments;
-
-        // Kiểm tra vai trò Admin
-        boolean isAdmin = currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName().equalsIgnoreCase("ADMIN"));
-
-        if (isAdmin) {
-            // Admin: lấy toàn bộ lịch hẹn đã bị từ chối
-            appointments = appointmentRepository.findByStatus(Appointment.Status.REJECTED);
-        } else {
-            // User: chỉ lấy lịch hẹn của chính người dùng
-            appointments = appointmentRepository.findByStatusAndUser(Appointment.Status.REJECTED, currentUser);
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can view cancelled appointments.");
         }
 
+        List<Appointment> appointments = appointmentRepository.findByStatus(Appointment.Status.REJECTED);
         return ResponseEntity.ok(appointments);
     }
+
     @PutMapping("/confirm/{id}")
     public ResponseEntity<String> confirmAppointment(@PathVariable Long id) {
         User currentUser = getAuthenticatedUser();
@@ -119,13 +97,17 @@ public class AdminAppointmentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
         }
 
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can confirm appointments.");
+        }
+
         Optional<Appointment> appointment = appointmentRepository.findById(id);
         if (appointment.isPresent()) {
             appointment.get().setStatus(Appointment.Status.CONFIRMED);
             appointmentRepository.save(appointment.get());
-            return ResponseEntity.ok("Lịch hẹn đã được xác nhận.");
+            return ResponseEntity.ok("Appointment has been confirmed.");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lịch hẹn không tồn tại.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }
     }
 
@@ -136,13 +118,17 @@ public class AdminAppointmentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
         }
 
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can reject appointments.");
+        }
+
         Optional<Appointment> appointment = appointmentRepository.findById(id);
         if (appointment.isPresent()) {
             appointment.get().setStatus(Appointment.Status.REJECTED);
             appointmentRepository.save(appointment.get());
-            return ResponseEntity.ok("Lịch hẹn đã bị từ chối.");
+            return ResponseEntity.ok("Appointment has been rejected.");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lịch hẹn không tồn tại.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }
     }
 
@@ -152,6 +138,10 @@ public class AdminAppointmentController {
         User currentUser = getAuthenticatedUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+        }
+
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can update appointment status.");
         }
 
         Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
@@ -170,7 +160,4 @@ public class AdminAppointmentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }
     }
-
-
-
 }

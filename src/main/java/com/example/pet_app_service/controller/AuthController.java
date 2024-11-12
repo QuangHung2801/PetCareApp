@@ -1,11 +1,15 @@
 package com.example.pet_app_service.controller;
 
+import com.example.pet_app_service.entity.PartnerInfo;
 import com.example.pet_app_service.entity.Role;
 import com.example.pet_app_service.entity.User;
+import com.example.pet_app_service.repository.RoleRepository;
+import com.example.pet_app_service.repository.UserRepository;
 import com.example.pet_app_service.service.RoleService;
 import com.example.pet_app_service.service.UserDetailsServiceImpl;
 import com.example.pet_app_service.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,12 +24,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
 
     @Autowired
     private UserService userService;
@@ -33,7 +43,10 @@ public class AuthController {
     private RoleService roleService;
     @Autowired
     private HttpSession session;
-
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
@@ -58,7 +71,11 @@ public class AuthController {
         String phone = loginData.get("phone");
         String password = loginData.get("password");
         try {
-            User user=userService.login(phone, password);
+            User user = userService.login(phone, password);
+            Set<GrantedAuthority> authorities = new HashSet<>();
+            for (Role role : user.getRoles()) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+            }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user.getPhone(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -69,7 +86,7 @@ public class AuthController {
             response.put("message", "Đăng nhập thành công");
             response.put("userId", user.getId()); // Include userId in the response
             response.put("phone", user.getPhone());
-//            response.put("name", user.getName());
+            response.put("roles", user.getRoles().stream().map(Role::getName).toArray());
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -97,6 +114,7 @@ public class AuthController {
 
         return ResponseEntity.ok("Đăng xuất thành công");
     }
+
 
 
 }

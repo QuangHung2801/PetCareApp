@@ -24,6 +24,20 @@ public class AppointmentService {
     }
 
 
+
+
+
+    // Lấy lịch hẹn theo ID
+    public Optional<Appointment> findById(Long appointmentId) {
+        return appointmentRepository.findById(appointmentId);
+    }
+
+
+
+    // Lấy danh sách lịch hẹn theo Partner ID
+    public List<Appointment> findAppointmentsByPartner(Long partnerId) {
+        return appointmentRepository.findByPartnerId(partnerId);
+    }
     @Transactional
     public boolean updateAppointmentStatus(Long appointmentId, Appointment status) {
         Optional<Appointment> optionalAppointment = appointmentRepository.findById(appointmentId);

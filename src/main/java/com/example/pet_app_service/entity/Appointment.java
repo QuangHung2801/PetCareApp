@@ -1,11 +1,13 @@
 package com.example.pet_app_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Optional;
 
 
 @Entity
@@ -33,6 +35,7 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "pet_id", nullable = false)
+
     private PetProfile petProfile;
 
     @Enumerated(EnumType.STRING)
@@ -40,8 +43,22 @@ public class Appointment {
 
     // Getters và Setters
 
+
+    @ManyToOne
+    @JoinColumn(name = "partner_id", nullable = false)
+    private PartnerInfo partner; // Removed Optional wrapper
+
     public enum Status {
         PENDING, CONFIRMED, REJECTED
+    }
+
+    public PartnerInfo getPartner() {
+        return partner;
+    }
+
+    // Setter
+    public void setPartner(PartnerInfo partner) {
+        this.partner = partner;
     }
 
     public PetService getService() {
@@ -128,6 +145,7 @@ public class Appointment {
     public String getPetType() {
         return petProfile != null ? petProfile.getType() : "Chưa có loại thú cưng";
     }
+
     public Long getServiceId() {
         return service != null ? service.getId() : null;
     }
@@ -135,6 +153,7 @@ public class Appointment {
     public String getPetServiceName() {
         return service != null ? service.getName() : null;
     }
+
     // Ensure that the JSON response includes the user name and pet name
     @JsonProperty("userName")
     public String getUserNameJson() {

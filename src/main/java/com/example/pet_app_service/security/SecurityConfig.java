@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -39,6 +41,13 @@ public class SecurityConfig {
         auth.setUserDetailsService(userDetailsService());
         auth.setPasswordEncoder(passwordEncoder());
         return auth;
+    }
+    @Bean
+    public HttpFirewall allowUrlEncodedNewlineHttpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowUrlEncodedSlash(true); // Cho phép URL có dấu gạch chéo
+        firewall.setAllowUrlEncodedPeriod(true); // Cho phép ký tự newline trong URL
+        return firewall;
     }
 
 

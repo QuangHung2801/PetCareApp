@@ -24,6 +24,9 @@ public class User {
 //    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Số điện thoại không hợp lệ")
     private String phone; // Số điện thoại người dùng
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "email", length = 50)
     @Size(max = 50, message = "Email phải ít hơn 50 ký tự")
     private String email; // Địa chỉ email
@@ -49,6 +52,9 @@ public class User {
 
     @Column(name = "enabled", nullable = false)
     private boolean enabled = true;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private PartnerInfo partnerInfo;
     // Constructor
     public User() {}
 
@@ -91,5 +97,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

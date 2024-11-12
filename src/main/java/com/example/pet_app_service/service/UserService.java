@@ -1,7 +1,9 @@
 package com.example.pet_app_service.service;
 
+import com.example.pet_app_service.entity.PartnerInfo;
 import com.example.pet_app_service.entity.Role;
 import com.example.pet_app_service.entity.User;
+import com.example.pet_app_service.repository.PartnerInfoRepository;
 import com.example.pet_app_service.repository.RoleRepository;
 import com.example.pet_app_service.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -24,6 +26,9 @@ public class UserService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PartnerInfoRepository partnerInfoRepository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -72,6 +77,12 @@ public User login(String phone, String password) {
             adminRole.setName("ADMIN");
             roleRepository.save(adminRole);
         }
+
+        if (roleRepository.findByName("PARTNER") == null) {
+            Role partnerRole = new Role();
+            partnerRole.setName("PARTNER");
+            roleRepository.save(partnerRole);
+        }
     }
 
     @Transactional
@@ -92,6 +103,8 @@ public User login(String phone, String password) {
             userRepository.save(adminUser);
         }
     }
+
+
 
     @PostConstruct
     public void init() {

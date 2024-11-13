@@ -26,7 +26,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginScreen(),
         '/LoginScreen': (context) => LoginScreen(),
-        '/HomePage': (context) => HomePage(),
+        '/MyHomePage': (context) => MyHomePage(title: '',),
+        '/AdminPage': (context) => AdminPage(),
       },
     );
   }
@@ -56,36 +57,19 @@ class LoginScreen extends StatelessWidget {
         await prefs.setString('JSESSIONID', jsessionId); // Lưu JSESSIONID
         print('JSESSIONID saved: $jsessionId');
       }
-
-      if (responseBody['userId'] is int) {
-        int userId = responseBody['userId'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', userId.toString()); // Chuyển đổi sang chuỗi trước khi lưu
-        print('User ID saved: $userId');
-      } else if (responseBody['userId'] is String) {
-        String userId = responseBody['userId'];
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', userId); // Lưu trực tiếp nếu đã là chuỗi
-        print('User ID saved: $userId');
-      }
-      // if (responseBody.containsKey('name')) {
-      //   String name = responseBody['name'];
-      //   final prefs = await SharedPreferences.getInstance();
-      //   await prefs.setString('name', name); // Lưu name vào SharedPreferences
-      //   print('User Name saved: $name');
-      // }
+      List roles = responseBody['roles'];
+      int userId = responseBody['userId'];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', userId.toString());
+      await prefs.setStringList('roles', roles.cast<String>());
 
       print('Login successful: ${response.body}');
-      if (responseBody['phone'] == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => AdminPage()), // Trang Admin
-        );
+      if (roles.contains('ADMIN')) {
+        Navigator.pushReplacementNamed(context, '/AdminPage');
+      } else if (roles.contains('PARTNER')) {
+        Navigator.pushReplacementNamed(context, '/PartnerPage');
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MyHomePage(title: 'home')), // Trang chính cho user
-        );
+        Navigator.pushReplacementNamed(context, '/MyHomePage');
       }
 
     } else {

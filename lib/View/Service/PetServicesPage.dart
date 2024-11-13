@@ -1,14 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:ungdungchamsocthucung/View/Service/petfood_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/pet_hotel_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/petsitting_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/transport_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/veterinary_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/walking_screen.dart';
 
 import 'adopt_screen.dart';
-import 'cleaning_screen.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -137,7 +131,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => VeterinaryScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),
@@ -147,7 +141,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => TransportScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),
@@ -157,7 +151,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => WalkingServiceScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),
@@ -167,7 +161,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PetSittingScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),
@@ -177,7 +171,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CleaningServiceScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),
@@ -187,7 +181,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PetHotelScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),
@@ -197,7 +191,7 @@ class _PetServicesPageState extends State<PetServicesPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PetFoodScreen()),
+                    MaterialPageRoute(builder: (context) => AdoptPetPage()),
                   );
                 },
               ),

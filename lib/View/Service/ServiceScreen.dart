@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ungdungchamsocthucung/View/Service/pet_care_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/pet_hotel_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/petfood_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/petsitting_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/transport_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/veterinary_screen.dart';
-import 'package:ungdungchamsocthucung/View/Service/walking_screen.dart';
 
 import 'adopt_screen.dart';
-import 'cleaning_screen.dart';
 import 'clinic_list_screen.dart';
-
 
 class ServiceScreen extends StatelessWidget {
   @override
@@ -28,7 +20,7 @@ class ServiceScreen extends StatelessWidget {
           Container(
             margin: EdgeInsets.all(16.0),
             child: Image.asset(
-              'assets/banner2.jpg', // Đường dẫn tới hình ảnh trong thư mục assets
+              'assets/banner2.jpg',
               height: 150,
               fit: BoxFit.contain,
             ),
@@ -49,6 +41,8 @@ class ServiceScreen extends StatelessWidget {
                   },
                   child: ServiceCard(
                     title: 'Phòng khám thú y',
+                    gradientColors: [Colors.blueAccent, Colors.lightBlue],
+                    shadowColor: Colors.blueAccent.withOpacity(0.5),
                   ),
                 ),
                 GestureDetector(
@@ -60,6 +54,8 @@ class ServiceScreen extends StatelessWidget {
                   },
                   child: ServiceCard(
                     title: 'Chăm sóc thú cưng',
+                    gradientColors: [Colors.pinkAccent, Colors.pink],
+                    shadowColor: Colors.pinkAccent.withOpacity(0.5),
                   ),
                 ),
               ],
@@ -90,7 +86,7 @@ class ServiceScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => VeterinaryScreen()),
+                      MaterialPageRoute(builder: (context) => AdoptPetPage()),
                     );
                   },
                 ),
@@ -101,11 +97,10 @@ class ServiceScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => VeterinaryScreen()),
+                      MaterialPageRoute(builder: (context) => AdoptPetPage()),
                     );
                   },
                 ),
-
                 _buildServiceIcon(
                   context,
                   Icons.food_bank,
@@ -113,7 +108,7 @@ class ServiceScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PetFoodScreen()),
+                      MaterialPageRoute(builder: (context) => AdoptPetPage()),
                     );
                   },
                 ),
@@ -146,15 +141,32 @@ class ServiceScreen extends StatelessWidget {
 
 class ServiceCard extends StatelessWidget {
   final String title;
+  final List<Color>? gradientColors;
+  final Color? shadowColor;
 
-  ServiceCard({required this.title});
+  ServiceCard({required this.title, this.gradientColors, this.shadowColor});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        gradient: gradientColors != null
+            ? LinearGradient(
+          colors: gradientColors!,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        )
+            : null,
+        color: gradientColors == null ? Colors.grey[300] : null,
         borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          if (shadowColor != null)
+            BoxShadow(
+              color: shadowColor!,
+              offset: Offset(0, 4),
+              blurRadius: 8.0,
+            ),
+        ],
       ),
       child: Center(
         child: Text(
@@ -162,6 +174,7 @@ class ServiceCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontStyle: FontStyle.italic,
+            color: Colors.white,
           ),
           textAlign: TextAlign.center,
         ),

@@ -35,7 +35,7 @@ class PetCareManagement extends StatelessWidget {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
               children: [
-                _buildGridItem('Nhắc lịch hẹn', Icons.timelapse, context, AppointmentReminderPage(), Colors.red),
+                _buildGridItem('Nhắc lịch hẹn', Icons.timelapse, context, PetHealthScreen(), Colors.red),
                 _buildGridItem('Sổ sức khỏe thú cưng', Icons.book, context, PetHealthScreen(), Colors.green),
                 _buildGridItem('Đặt lịch hẹn' , Icons.timer, context,  ViewAppointment(), Colors.orange),
               ],

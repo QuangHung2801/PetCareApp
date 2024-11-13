@@ -6,6 +6,7 @@ import 'View/Menu/Menu.dart';
 import 'View/PetProfile/PetCareManagement.dart';
 import 'View/Service/PetServicesPage.dart';
 import 'View/PetProfile/PetProfile.dart';
+import 'View/Service/ServiceScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     HomePageSociety(),
     ExplorePage(),
-    PetCareManagement(),
+    ServiceScreen(),
     PetServicesPage(),
     HomePage(),
   ];

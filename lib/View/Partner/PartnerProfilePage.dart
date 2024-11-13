@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PartnerProfilePage extends StatefulWidget {
   @override
@@ -15,11 +16,15 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
   final TextEditingController phoneController = TextEditingController(text: "Partner Phone");
   final TextEditingController emailController = TextEditingController(text: "Partner Email");
 
-  // List of available services
   List<String> allServices = ["Service 1", "Service 2", "Service 3", "Service 4"];
-  // List of selected services
   List<String> selectedServices = [];
   TextEditingController newServiceController = TextEditingController();
+
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear session data
+    Navigator.pushReplacementNamed(context, '/LoginScreen');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +92,6 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        // Save edited information
                         setState(() {
                           isEditingPersonalInfo = false;
                         });
@@ -225,7 +229,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
         SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
-            // Handle log out
+            _logout(context); // Call the logout function
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           child: Text("Log Out"),

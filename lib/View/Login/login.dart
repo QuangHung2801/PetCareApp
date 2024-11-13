@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../Navbar.dart';
 import '../../main.dart';
 import '../Menu/Menu.dart';
+import '../Partner/PartnerPage.dart';
 import '../admin/AdminPage.dart';
 import 'Forgotpassword.dart';
 import 'register.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/LoginScreen': (context) => LoginScreen(),
         '/MyHomePage': (context) => MyHomePage(title: '',),
         '/AdminPage': (context) => AdminPage(),
+        '/PartnerHomePage': (context) => PartnerHomePage(),
       },
     );
   }
@@ -67,7 +69,7 @@ class LoginScreen extends StatelessWidget {
       if (roles.contains('ADMIN')) {
         Navigator.pushReplacementNamed(context, '/AdminPage');
       } else if (roles.contains('PARTNER')) {
-        Navigator.pushReplacementNamed(context, '/PartnerPage');
+        Navigator.pushReplacementNamed(context, '/PartnerHomePage');
       } else {
         Navigator.pushReplacementNamed(context, '/MyHomePage');
       }

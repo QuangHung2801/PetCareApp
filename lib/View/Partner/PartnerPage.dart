@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'AppointmentsPage.dart';
+import 'NoticationsPage.dart';
 import 'PartnerProfilePage.dart';
 import 'Partner_Navbar.dart';
-import 'AppointmentsPage.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -31,7 +33,7 @@ class _PartnerHomePageState extends State<PartnerHomePage> {
 
   final List<Widget> _pages = [
     PartnerDashboardPage(),
-    AppointmentsPage(), // Ensure this is the correct page
+    NotificationsPage(),
     AppointmentsPage(),
     PartnerProfilePage(),
   ];
@@ -53,6 +55,8 @@ class _PartnerHomePageState extends State<PartnerHomePage> {
     );
   }
 }
+
+
 
 class PartnerDashboardPage extends StatelessWidget {
   @override
@@ -113,52 +117,7 @@ class PartnerDashboardPage extends StatelessWidget {
   }
 }
 
-class ServiceManagementPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Service Management"),
-      ),
-      body: Center(
-        child: Text("Service Management Page"),
-      ),
-    );
-  }
-}
 
-class AppointmentsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Appointments"),
-      ),
-      body: Center(
-        child: Text("Appointments Page"),
-      ),
-    );
-  }
-}
 
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Profile"),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PartnerDashboardPage()),
-            );
-          },
-          child: Text("Go to Dashboard"),
-        ),
-      ),
-    );
-  }
-}
+
+

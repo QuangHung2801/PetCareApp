@@ -9,7 +9,6 @@ import com.example.pet_app_service.repository.UserRepository;
 import com.example.pet_app_service.service.ServiceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,53 +33,6 @@ public class PartnerInfoController {
 
     @Autowired
     private UserRepository userRepository;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @GetMapping("/infor/{id}")
-    public ResponseEntity<PartnerInfo> getVeterinaryCareDetails(@PathVariable Long id) {
-        PartnerInfo partnerInfo = partnerInfoService.getPartnerById(id);
-        if (partnerInfo != null) {
-            return ResponseEntity.ok(partnerInfo);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-    @GetMapping("/veterinary-care")
-    public ResponseEntity<List<PartnerInfo>> getApprovedVeterinaryCarePartners() {
-        List<PartnerInfo> approvedPartners = partnerInfoService.getApprovedVeterinaryCarePartners();
-        System.out.println("Approved Veterinary Partners: " + approvedPartners);
-        return ResponseEntity.ok(approvedPartners);
-    }
-
-
-    @GetMapping("/pet-care")
-    public ResponseEntity<List<PartnerInfo>> getApprovedPetCarePartners() {
-        List<PartnerInfo> approvedPartners = partnerInfoService.getApprovedPetCarePartners();
-        return ResponseEntity.ok(approvedPartners);
-    }
-
-
-    @GetMapping("/approved")
-    public ResponseEntity<List<PartnerInfo>> getAllApprovedPartners() {
-        List<PartnerInfo> approvedPartners = partnerInfoService.getApprovedPartners();
-        return ResponseEntity.ok(approvedPartners);
-    }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerPartner(

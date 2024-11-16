@@ -14,51 +14,10 @@ public class PartnerInfoService {
     @Autowired
     private PartnerInfoRepository partnerInfoRepository;
 
-    public List<PartnerInfo> getApprovedPartners() {
-        return partnerInfoRepository.findByStatus(PartnerInfo.PartnerStatus.APPROVED);
-    }
-
-
-    public PartnerInfoService(PartnerInfoRepository partnerInfoRepository) {
-        this.partnerInfoRepository = partnerInfoRepository;
-    }
-
-    public List<PartnerInfo> getApprovedVeterinaryCarePartners() {
-        return partnerInfoRepository.findByStatusAndServiceCategory(
-                PartnerInfo.PartnerStatus.APPROVED,
-                PartnerInfo.ServiceCategory.VETERINARY_CARE
-        );
-    }
-
-
-    public PartnerInfo getPartnerById(Long id) {
-        return partnerInfoRepository.findById(id).orElse(null);
-    }
-
-
-    public PartnerInfo getPartnerByUserId(Long userId) {
-        return partnerInfoRepository.findByUserId(userId)
-                .orElse(null); // Trả về null nếu không tìm thấy
-    }
-
-
-
-
-
-
-
-
-
     // Đăng ký đối tác
     public PartnerInfo registerPartner(PartnerInfo partnerInfo) {
         partnerInfo.setAvailableServicesByCategory();
         return partnerInfoRepository.save(partnerInfo);
-    }
-
-
-    public List<PartnerInfo> getApprovedPetCarePartners() {
-        return partnerInfoRepository.findByStatusAndServiceCategory(
-                PartnerInfo.PartnerStatus.APPROVED, PartnerInfo.ServiceCategory.PET_CARE);
     }
 
     // Duyệt đối tác

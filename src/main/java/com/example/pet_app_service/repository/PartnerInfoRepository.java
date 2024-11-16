@@ -12,11 +12,4 @@ import java.util.Optional;
 public interface PartnerInfoRepository extends JpaRepository<PartnerInfo, Long> {
     Optional<PartnerInfo> findByUser(User user);
     List<PartnerInfo> findByStatus(PartnerInfo.PartnerStatus status);
-
-    List<PartnerInfo> findByServiceCategory(PartnerInfo.ServiceCategory serviceCategory);
-
-    List<PartnerInfo> findByStatusAndServiceCategory(PartnerInfo.PartnerStatus status, PartnerInfo.ServiceCategory serviceCategory);
-    Optional<PartnerInfo> findByUserId(Long userId);
-
-
 }

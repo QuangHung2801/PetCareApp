@@ -16,7 +16,6 @@ public class PartnerInfoService {
 
     // Đăng ký đối tác
     public PartnerInfo registerPartner(PartnerInfo partnerInfo) {
-        partnerInfo.setAvailableServicesByCategory();
         return partnerInfoRepository.save(partnerInfo);
     }
 
@@ -43,4 +42,20 @@ public class PartnerInfoService {
     public Optional<PartnerInfo> findById(Long id) {
         return partnerInfoRepository.findById(id);
     }
+    public PartnerInfo getPartnerInfoByUserId(Long userId) {
+        return partnerInfoRepository.findByUser_Id(userId);
+    }
+
+    public PartnerInfo updatePartnerInfo(Long id, PartnerInfo updatedInfo) {
+        Optional<PartnerInfo> existingInfo = partnerInfoRepository.findById(id);
+        if (existingInfo.isPresent()) {
+            PartnerInfo partnerInfo = existingInfo.get();
+            partnerInfo.setBusinessName(updatedInfo.getBusinessName());
+            partnerInfo.setAddress(updatedInfo.getAddress());
+            partnerInfo.setServices(updatedInfo.getServices());
+            return partnerInfoRepository.save(partnerInfo);
+        }
+        return null;
+    }
+
 }

@@ -53,7 +53,9 @@ public class User {
     @Column(name = "enabled", nullable = false)
     private boolean enabled = true;
 
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private PartnerInfo partnerInfo;
     // Constructor
     public User() {}

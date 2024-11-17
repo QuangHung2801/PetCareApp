@@ -1,6 +1,8 @@
 package com.example.pet_app_service.entity;
 
 import com.example.pet_app_service.service.ServiceType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,6 +54,7 @@ public class PartnerInfo {
 
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 
     // Hàm set dịch vụ theo loại dịch vụ đã chọn

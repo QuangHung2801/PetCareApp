@@ -116,6 +116,8 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     final response = await request.send();
     if (response.statusCode == 200) {
       print("Đăng ký thành công");
+      Navigator.pop(context);
+      print("Dịch vụ đã chọn: $selectedServicesList");
     } else {
       final responseBody = await response.stream.bytesToString();
       print('Failed to load pet profiles: ${response.statusCode}');

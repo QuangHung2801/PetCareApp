@@ -1,101 +1,146 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'BookingServiceScreen.dart'; // Import BookingServiceScreen
+import 'package:http/http.dart' as http;
+import 'BookingServiceScreen.dart';
+import 'clinic_BookingServiceScreen.dart'; // Adjust import paths as necessary
 
-class CareDetailScreen extends StatelessWidget {
-  final String clinicName;
+class CareDetailScreen extends StatefulWidget {
+  final String careName;
 
-  CareDetailScreen({required this.clinicName});
+  CareDetailScreen({required this.careName});
+
+  @override
+  _CareDetailScreenState createState() => _CareDetailScreenState();
+}
+
+class _CareDetailScreenState extends State<CareDetailScreen> {
+  late Future<Map<String, dynamic>> careDetails;
+
+  // Translation map for services
+  final Map<String, String> serviceTranslation = {
+    "PET_BOARDING": "Trông giữ thú cưng",
+    "PET_SPA": "Spa cho thú cưng",
+    "PET_GROOMING": "Tắm và cắt tỉa lông",
+    "PET_WALKING": "Dắt thú cưng đi dạo",
+    "VETERINARY_EXAMINATION": "Khám chữa bệnh",
+    "VACCINATION": "Tiêm phòng",
+    "SURGERY": "Phẫu thuật",
+    "REGULAR_CHECKUP": "Khám định kỳ",
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    careDetails = fetchCareDetails(widget.careName);
+  }
+
+  Future<Map<String, dynamic>> fetchCareDetails(String careName) async {
+    final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/clinics/$careName'));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load care details');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(clinicName, style: TextStyle(color: Colors.white)),
+        title: Text(widget.careName, style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Phần hình ảnh
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/banner1.jpg'), // Replace with your image path
-                  fit: BoxFit.cover,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: careDetails,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: Text('No care details found'));
+          }
+
+          var clinic = snapshot.data!;
+          var services = clinic['services'] ?? [];
+
+          // Translate and filter available services
+          var availableServices = services.map((service) {
+            return serviceTranslation[service] ?? service;
+          }).toList();
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Banner Image
+                Container(
+                  height: 250,
+                  width: double.infinity,
+                  child: clinic['imageUrl'] != null && clinic['imageUrl'] != ""
+                      ? Image.network(
+                    'http://10.0.2.2:8888/update/img/partners/${clinic['imageUrl']}',
+                    fit: BoxFit.cover,
+                  )
+                      : Image.asset('assets/images/default-image.jpg'),
                 ),
-              ),
-            ),
-            // Thông tin chi tiết đại lý
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    clinicName,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  Text('Địa chỉ: 123 Đường ABC, Quận 1, TP. HCM'),
-                  SizedBox(height: 5),
-                  Text('Số điện thoại: 0123456789'),
-                  SizedBox(height: 5),
-                  Text('Email: example@clinic.com'),
-                  SizedBox(height: 5),
-                  Text('Thời gian mở cửa: 07:30 - 17:00'),
-                  SizedBox(height: 5),
-                  Row(
-                    children: [
-                      Icon(Icons.star, color: Colors.yellow, size: 20),
-                      Icon(Icons.star, color: Colors.yellow, size: 20),
-                      Icon(Icons.star, color: Colors.yellow, size: 20),
-                      Icon(Icons.star, color: Colors.yellow, size: 20),
-                      Icon(Icons.star_border, color: Colors.grey, size: 20),
-                      SizedBox(width: 8),
-                      Text('(13 đánh giá)', style: TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Dịch vụ: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Column(
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('• Tắm chó, mèo', style: TextStyle(fontSize: 16)),
-                      Text('• Tỉa lông', style: TextStyle(fontSize: 16)),
-                      Text('• Khách sạn thú cưng', style: TextStyle(fontSize: 16)),
-                      Text('• Cắt móng', style: TextStyle(fontSize: 16)),
+                      Text(
+                        clinic['businessName'] ?? '',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text('Địa chỉ: ${clinic['address'] ?? 'Không có thông tin'}'),
+                      SizedBox(height: 5),
+                      Text('Số điện thoại: ${clinic['phone'] ?? 'Không có thông tin'}'),
+                      SizedBox(height: 5),
+                      Text('Email: ${clinic['email'] ?? 'Không có thông tin'}'),
+                      SizedBox(height: 5),
+                      Text('Thời gian mở cửa: ${clinic['workingHours'] ?? "Không có thông tin"}'),
+                      SizedBox(height: 10),
+                      Text(
+                        'Dịch vụ: ',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      // Display available services
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List<Widget>.from(availableServices.map((service) {
+                          return Text('• $service', style: TextStyle(fontSize: 16));
+                        })),
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            // Nút đặt dịch vụ
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Chuyển sang trang BookingServiceScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => BookingServiceScreen()),
-                  );
-                },
-                child: Text('Đặt dịch vụ'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: TextStyle(fontSize: 18),
                 ),
-              ),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingServiceScreen(clinicName: widget.careName),
+                        ),
+                      );
+                    },
+                    child: Text('Đặt dịch vụ'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      textStyle: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

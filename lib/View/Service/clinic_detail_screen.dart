@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'clinic_BookingServiceScreen.dart';
+
 class ClinicDetailScreen extends StatefulWidget {
   final String clinicName;
 
@@ -120,7 +122,12 @@ class _ClinicDetailScreenState extends State<ClinicDetailScreen> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/booking');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingServiceScreen(clinicName: widget.clinicName),
+                        ),
+                      );
                     },
                     child: Text('Đặt dịch vụ'),
                     style: ElevatedButton.styleFrom(

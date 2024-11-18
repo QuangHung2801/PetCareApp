@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class BookingServiceScreen extends StatefulWidget {
+  final String clinicName;
+
+  BookingServiceScreen({required this.clinicName});
+
   @override
   _BookingServiceScreenState createState() => _BookingServiceScreenState();
 }

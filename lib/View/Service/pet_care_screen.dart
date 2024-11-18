@@ -77,7 +77,7 @@ class _PetCareScreenState extends State<PetCareScreen> {
               itemBuilder: (context, index) {
                 final service = petCareList[index];
                 return PetCareItem(
-                  clinicName: service['businessName'] ?? 'N/A',
+                  careName: service['businessName'] ?? 'N/A',
                   rating: service['rating'] != null
                       ? double.tryParse(service['rating'].toString())
                       : 0.0,
@@ -87,7 +87,7 @@ class _PetCareScreenState extends State<PetCareScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            CareDetailScreen(clinicName: service['businessName'] ?? 'N/A'),
+                            CareDetailScreen(careName: service['businessName'] ?? 'N/A'),
                       ),
                     );
                   },
@@ -104,13 +104,13 @@ class _PetCareScreenState extends State<PetCareScreen> {
 
 // Widget PetCareItem
 class PetCareItem extends StatelessWidget {
-  final String clinicName;
+  final String careName;
   final double? rating;
   final String imageUrl;
   final VoidCallback onTap;
 
   PetCareItem({
-    required this.clinicName,
+    required this.careName,
     this.rating,
     required this.imageUrl,
     required this.onTap,
@@ -138,7 +138,7 @@ class PetCareItem extends StatelessWidget {
             ),
           ),
           title: Text(
-            clinicName,
+            careName,
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
           ),
           subtitle: Column(

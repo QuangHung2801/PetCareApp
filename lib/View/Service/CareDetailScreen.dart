@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'BookingServiceScreen.dart';
+import 'care_BookingServiceScreen.dart';
 import 'clinic_BookingServiceScreen.dart'; // Adjust import paths as necessary
 
 class CareDetailScreen extends StatefulWidget {
@@ -62,8 +63,8 @@ class _CareDetailScreenState extends State<CareDetailScreen> {
             return Center(child: Text('No care details found'));
           }
 
-          var clinic = snapshot.data!;
-          var services = clinic['services'] ?? [];
+          var care = snapshot.data!;
+          var services = care['services'] ?? [];
 
           // Translate and filter available services
           var availableServices = services.map((service) {
@@ -78,9 +79,9 @@ class _CareDetailScreenState extends State<CareDetailScreen> {
                 Container(
                   height: 250,
                   width: double.infinity,
-                  child: clinic['imageUrl'] != null && clinic['imageUrl'] != ""
+                  child: care['imageUrl'] != null && care['imageUrl'] != ""
                       ? Image.network(
-                    'http://10.0.2.2:8888/update/img/partners/${clinic['imageUrl']}',
+                    'http://10.0.2.2:8888/update/img/partners/${care['imageUrl']}',
                     fit: BoxFit.cover,
                   )
                       : Image.asset('assets/images/default-image.jpg'),
@@ -91,17 +92,17 @@ class _CareDetailScreenState extends State<CareDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        clinic['businessName'] ?? '',
+                        care['businessName'] ?? '',
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 10),
-                      Text('Địa chỉ: ${clinic['address'] ?? 'Không có thông tin'}'),
+                      Text('Địa chỉ: ${care['address'] ?? 'Không có thông tin'}'),
                       SizedBox(height: 5),
-                      Text('Số điện thoại: ${clinic['phone'] ?? 'Không có thông tin'}'),
+                      Text('Số điện thoại: ${care['phone'] ?? 'Không có thông tin'}'),
                       SizedBox(height: 5),
-                      Text('Email: ${clinic['email'] ?? 'Không có thông tin'}'),
+                      Text('Email: ${care['email'] ?? 'Không có thông tin'}'),
                       SizedBox(height: 5),
-                      Text('Thời gian mở cửa: ${clinic['workingHours'] ?? "Không có thông tin"}'),
+                      Text('Thời gian mở cửa: ${care['workingHours'] ?? "Không có thông tin"}'),
                       SizedBox(height: 10),
                       Text(
                         'Dịch vụ: ',
@@ -124,7 +125,7 @@ class _CareDetailScreenState extends State<CareDetailScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => BookingServiceScreen(clinicName: widget.careName),
+                          builder: (context) => CareBookingServiceScreen(careName: widget.careName),
                         ),
                       );
                     },

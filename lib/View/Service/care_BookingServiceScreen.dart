@@ -4,15 +4,15 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
-class BookingServiceScreen extends StatefulWidget {
-  final String clinicName;
-  BookingServiceScreen({required this.clinicName});
+class CareBookingServiceScreen extends StatefulWidget {
+  final String careName;
+  CareBookingServiceScreen({required this.careName});
 
   @override
   _BookingServiceScreenState createState() => _BookingServiceScreenState();
 }
 
-class _BookingServiceScreenState extends State<BookingServiceScreen> {
+class _BookingServiceScreenState extends State<CareBookingServiceScreen> {
   List<String> availableServices = [];
   List<Map<String, dynamic>> userPets = [];
   String? selectedService;
@@ -37,13 +37,13 @@ class _BookingServiceScreenState extends State<BookingServiceScreen> {
     super.initState();
     fetchAvailableServices();
     fetchUserPets();
-    getClinicId(widget.clinicName);
+    getClinicId(widget.careName);
   }
 
   // Lấy danh sách dịch vụ từ clinic details
   Future<void> fetchAvailableServices() async {
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/clinics/${widget.clinicName}'));
+      final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/clinics/${widget.careName}'));
       if (response.statusCode == 200) {
         var clinic = json.decode(response.body);
         var services = clinic['services'] ?? [];

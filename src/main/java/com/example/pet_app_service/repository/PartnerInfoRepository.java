@@ -23,4 +23,5 @@ public interface PartnerInfoRepository extends JpaRepository<PartnerInfo, Long> 
             String businessName);
 
     PartnerInfo findByBusinessNameAndStatus(String businessName, PartnerInfo.PartnerStatus status);
+    Optional<PartnerInfo> findByUserId(Long userId);
 }

@@ -51,11 +51,13 @@ public class AnimalCareController {
         User user = clinic.getUser();
 
         Map<String, Object> response = new HashMap<>();
+        response.put("id",clinic.getId());
         response.put("businessName", clinic.getBusinessName());
         response.put("address", clinic.getAddress());
         response.put("imageUrl", clinic.getImageUrl());
         response.put("workingHours", clinic.getOpeningTime() + " - " + clinic.getClosingTime());
         response.put("services", clinic.getServices());
+        response.put("user_id", clinic.getUser().getId());
         response.put("phone", user != null ? user.getPhone() : "");
         response.put("email", user != null ? user.getEmail() : "");
 

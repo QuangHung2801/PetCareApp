@@ -1,6 +1,7 @@
 package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.Appointment;
+import com.example.pet_app_service.entity.PartnerInfo;
 import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.repository.AppointmentRepository;
 import com.example.pet_app_service.repository.PartnerInfoRepository;
@@ -29,6 +30,15 @@ public class PartnerAppointmentController {
     @Autowired
     private PartnerInfoRepository partnerInfoRepository;
 
+    @GetMapping("/info/{userId}")
+    public ResponseEntity<?> getPartnerInfoByUserId(@PathVariable Long userId) {
+        Optional<PartnerInfo> partnerInfo = partnerInfoRepository.findByUserId(userId);
+        if (partnerInfo.isPresent()) {
+            return ResponseEntity.ok(partnerInfo.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Partner not found");
+        }
+    }
     // Kiểm tra xác thực người dùng
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -46,7 +56,7 @@ public class PartnerAppointmentController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<?> getPendingAppointments() {
+    public ResponseEntity<?> getPendingAppointments(@RequestParam Long partnerId) {
         User currentUser = getAuthenticatedUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
@@ -56,12 +66,12 @@ public class PartnerAppointmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can view pending appointments.");
         }
 
-        List<Appointment> appointments = appointmentRepository.findByStatus(Appointment.Status.PENDING);
+        List<Appointment> appointments = appointmentRepository.findByPartnerIdAndStatus(partnerId,Appointment.Status.PENDING);
         return ResponseEntity.ok(appointments);
     }
 
     @GetMapping("/confirmed")
-    public ResponseEntity<?> getConfirmedAppointments() {
+    public ResponseEntity<?> getConfirmedAppointments(@RequestParam Long partnerId) {
         User currentUser = getAuthenticatedUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
@@ -71,12 +81,12 @@ public class PartnerAppointmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can view confirmed appointments.");
         }
 
-        List<Appointment> appointments = appointmentRepository.findByStatus(Appointment.Status.CONFIRMED);
+        List<Appointment> appointments = appointmentRepository.findByPartnerIdAndStatus(partnerId,Appointment.Status.CONFIRMED);
         return ResponseEntity.ok(appointments);
     }
 
     @GetMapping("/rejected")
-    public ResponseEntity<?> getCancelledAppointments() {
+    public ResponseEntity<?> getCancelledAppointments(@RequestParam Long partnerId) {
         User currentUser = getAuthenticatedUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
@@ -86,7 +96,7 @@ public class PartnerAppointmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can view cancelled appointments.");
         }
 
-        List<Appointment> appointments = appointmentRepository.findByStatus(Appointment.Status.REJECTED);
+        List<Appointment> appointments = appointmentRepository.findByPartnerIdAndStatus(partnerId,Appointment.Status.REJECTED);
         return ResponseEntity.ok(appointments);
     }
 
@@ -160,4 +170,6 @@ public class PartnerAppointmentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }
     }
+
+
 }

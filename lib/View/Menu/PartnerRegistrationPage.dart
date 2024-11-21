@@ -12,6 +12,7 @@ class PartnerRegistrationForm extends StatefulWidget {
 
 class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
   final TextEditingController businessNameController = TextEditingController();
+  final TextEditingController businessCodeController = TextEditingController();
   final TextEditingController businessLicenseController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -97,6 +98,7 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     var request = http.MultipartRequest('POST', uri);
     request.fields['userId'] = userId;
     request.fields['businessName'] = businessNameController.text;
+    request.fields['businessCode'] = businessCodeController.text;
     request.fields['businessLicense'] = businessLicenseController.text;
     request.fields['address'] = addressController.text;
     request.fields['openingTime'] = _formatTime(openingTime!) ?? '';
@@ -137,6 +139,10 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
             TextField(
               controller: businessNameController,
               decoration: InputDecoration(labelText: "Tên doanh nghiệp"),
+            ),
+            TextField(
+              controller: businessCodeController,
+              decoration: InputDecoration(labelText: "Mã số thuế"),
             ),
             TextField(
               controller: businessLicenseController,

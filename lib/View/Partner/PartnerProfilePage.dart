@@ -14,6 +14,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
 
   TextEditingController nameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
+
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
@@ -21,6 +22,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
   List<String> selectedServices = [];
   String imageUrl = "";
   String businessName = "";
+  String businessCode = "";
   String businessLicense = "";
   String serviceCategory = ""; // Store the category type (e.g., PET_CARE, VETERINARY_CARE)
 
@@ -54,6 +56,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
         final data = jsonDecode(response.body);
         setState(() {
           businessName = data['businessName'] ?? "Thông tin không có sẵn";
+          businessCode = data['businessCode'] ?? "Thông tin không có sẵn";
           businessLicense = data['businessLicense'] ?? "Thông tin không có sẵn";
           addressController.text = data['address'] ?? "Địa chỉ không có sẵn";
           phoneController.text = data['phone'] ?? "Số điện thoại không có sẵn";
@@ -107,6 +110,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'businessName': businessName,
+        'businessCode': businessCode,
         'businessLicense': businessLicense,
         'address': addressController.text,
         'phone': phoneController.text,
@@ -155,6 +159,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Business Name: $businessName"),
+          Text("Business Code: $businessCode"),
           Text("Business License: $businessLicense"),
           SizedBox(height: 8),
           TextField(

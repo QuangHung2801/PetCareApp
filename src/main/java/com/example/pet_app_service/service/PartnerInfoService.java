@@ -51,6 +51,7 @@ public class PartnerInfoService {
         if (existingInfo.isPresent()) {
             PartnerInfo partnerInfo = existingInfo.get();
             partnerInfo.setBusinessName(updatedInfo.getBusinessName());
+            partnerInfo.setBusinessCode(updatedInfo.getBusinessCode());
             partnerInfo.setAddress(updatedInfo.getAddress());
             partnerInfo.setServices(updatedInfo.getServices());
             return partnerInfoRepository.save(partnerInfo);

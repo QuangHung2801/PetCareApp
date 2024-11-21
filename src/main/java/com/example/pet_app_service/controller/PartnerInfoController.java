@@ -46,6 +46,7 @@ public class PartnerInfoController {
             @RequestParam(required = false) MultipartFile image,
             @RequestParam String businessLicense,
             @RequestParam String businessName,
+            @RequestParam String businessCode,
             @RequestParam String address,
             @RequestParam("openingTime") @DateTimeFormat(pattern = "HH:mm") LocalTime openingTime,
             @RequestParam("closingTime") @DateTimeFormat(pattern = "HH:mm") LocalTime closingTime,
@@ -65,6 +66,7 @@ public class PartnerInfoController {
         PartnerInfo partnerInfo = new PartnerInfo();
         partnerInfo.setBusinessLicense(businessLicense);
         partnerInfo.setBusinessName(businessName);
+        partnerInfo.setBusinessCode(businessCode);
         partnerInfo.setAddress(address);
         partnerInfo.setOpeningTime(openingTime);
         partnerInfo.setClosingTime(closingTime);
@@ -193,6 +195,7 @@ public class PartnerInfoController {
                     // Tạo Map để chứa kết hợp thông tin từ PartnerInfo và User
                     Map<String, Object> response = new HashMap<>();
                     response.put("businessName", partnerInfo.getBusinessName());
+                    response.put("businessCode", partnerInfo.getBusinessCode());
                     response.put("businessLicense", partnerInfo.getBusinessLicense());
                     response.put("address", partnerInfo.getAddress());
                     response.put("phone", user.getPhone());
@@ -237,6 +240,7 @@ public class PartnerInfoController {
         // Cập nhật thông tin đối tác
         partnerInfo.setAddress((String) updates.get("address"));
         partnerInfo.setBusinessName((String) updates.get("businessName"));
+        partnerInfo.setBusinessCode((String) updates.get("businessCode"));
         partnerInfo.setBusinessLicense((String) updates.get("businessLicense"));
 
         // Cập nhật thông tin người dùng

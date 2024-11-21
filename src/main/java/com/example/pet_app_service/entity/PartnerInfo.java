@@ -23,6 +23,9 @@ public class PartnerInfo {
     @Column(nullable = false)
     private String businessLicense;
 
+    @Column
+    private String businessCode;
+
     @Column(nullable = false)
     private String businessName;
 

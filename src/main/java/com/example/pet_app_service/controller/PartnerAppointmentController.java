@@ -100,6 +100,8 @@ public class PartnerAppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
+
+
     @PutMapping("/confirm/{id}")
     public ResponseEntity<String> confirmAppointment(@PathVariable Long id) {
         User currentUser = getAuthenticatedUser();
@@ -137,6 +139,32 @@ public class PartnerAppointmentController {
             appointment.get().setStatus(Appointment.Status.REJECTED);
             appointmentRepository.save(appointment.get());
             return ResponseEntity.ok("Appointment has been rejected.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
+        }
+    }
+
+    @PutMapping("/complete/{id}")
+    public ResponseEntity<String> completeAppointment(@PathVariable Long id) {
+        User currentUser = getAuthenticatedUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated.");
+        }
+
+        if (!isPartner(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only partners can mark appointments as completed.");
+        }
+
+        Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
+        if (appointmentOptional.isPresent()) {
+            Appointment appointment = appointmentOptional.get();
+            if (appointment.getStatus() == Appointment.Status.CONFIRMED) {
+                appointment.setStatus(Appointment.Status.COMPLETED);
+                appointmentRepository.save(appointment);
+                return ResponseEntity.ok("Appointment has been marked as completed.");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only confirmed appointments can be marked as completed.");
+            }
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found.");
         }

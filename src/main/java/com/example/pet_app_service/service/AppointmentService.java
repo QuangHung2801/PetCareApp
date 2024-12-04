@@ -1,6 +1,7 @@
 package com.example.pet_app_service.service;
 
 import com.example.pet_app_service.entity.Appointment;
+import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.repository.AppointmentRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,6 @@ public class AppointmentService {
     public AppointmentService(AppointmentRepository appointmentRepository) {
         this.appointmentRepository = appointmentRepository;
     }
-
-
-
-
 
     // Lấy lịch hẹn theo ID
     public Optional<Appointment> findById(Long appointmentId) {
@@ -61,5 +58,9 @@ public class AppointmentService {
 
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
+    }
+
+    public List<Appointment> findAppointmentsByUserAndStatus(User user, Appointment.Status status) {
+        return appointmentRepository.findByUserAndStatus(user, status);
     }
 }

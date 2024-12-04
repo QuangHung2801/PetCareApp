@@ -2,6 +2,7 @@ package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.PartnerInfo;
 import com.example.pet_app_service.entity.PartnerInfo.ServiceCategory;
+import com.example.pet_app_service.entity.PetProfile;
 import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.repository.PartnerInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,7 @@ public class AnimalCareController {
         response.put("user_id", clinic.getUser().getId());
         response.put("phone", user != null ? user.getPhone() : "");
         response.put("email", user != null ? user.getEmail() : "");
+        response.put("averageRating", clinic.getAverageRating());
 
         return ResponseEntity.ok(response);
     }

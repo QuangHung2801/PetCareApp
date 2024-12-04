@@ -6,6 +6,7 @@ import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.repository.RoleRepository;
 import com.example.pet_app_service.service.PartnerInfoService;
 import com.example.pet_app_service.repository.UserRepository;
+import com.example.pet_app_service.service.PartnerSearchService;
 import com.example.pet_app_service.service.ServiceType;
 import com.example.pet_app_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,8 @@ public class PartnerInfoController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PartnerSearchService partnerSearchService;
 
     @Autowired
     private UserRepository userRepository;
@@ -261,5 +264,16 @@ public class PartnerInfoController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/nearby")
+    public ResponseEntity<List<PartnerInfo>> findNearbyPartners(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(required = false) List<PartnerInfo.ServiceCategory> category) {
 
+        List<PartnerInfo> partners = category != null && !category.isEmpty()
+                ? partnerSearchService.getNearbyPartnersWithCategory(latitude, longitude, category)
+                : partnerSearchService.getNearbyPartners(latitude, longitude);
+
+        return ResponseEntity.ok(partners);
+    }
 }

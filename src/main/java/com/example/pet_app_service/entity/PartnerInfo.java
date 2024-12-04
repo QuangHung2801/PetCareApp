@@ -38,8 +38,14 @@ public class PartnerInfo {
     @Column(nullable = false)
     private LocalTime closingTime;
 
+    @Column(nullable = false)
+    private Double latitude;
+
+    @Column(nullable = false)
+    private Double longitude;
+
     @Column
-    private Double rating;
+    private double averageRating;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -87,5 +93,13 @@ public class PartnerInfo {
     public enum ServiceCategory {
         PET_CARE,     // Dịch vụ chăm sóc thú cưng
         VETERINARY_CARE // Dịch vụ phòng khám thú y
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
     }
 }

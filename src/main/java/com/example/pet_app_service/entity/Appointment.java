@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Appointment {
@@ -47,8 +49,11 @@ public class Appointment {
     private PartnerInfo partner;
 
     public enum Status {
-        PENDING, CONFIRMED, REJECTED
+        PENDING, CONFIRMED,COMPLETED, REJECTED
     }
+
+    @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
 
     // Getters and Setters
 
@@ -130,6 +135,10 @@ public class Appointment {
 
     public void setPartner(PartnerInfo partner) {
         this.partner = partner;
+    }
+
+    public boolean canBeReviewed() {
+        return this.status == Status.COMPLETED;
     }
 
     // JSON Response Enhancements

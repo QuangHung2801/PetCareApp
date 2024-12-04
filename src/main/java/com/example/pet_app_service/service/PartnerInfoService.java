@@ -6,16 +6,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class PartnerInfoService {
 
     @Autowired
+    private GeoLocationService geoLocationService;
+
+    @Autowired
     private PartnerInfoRepository partnerInfoRepository;
 
     // Đăng ký đối tác
     public PartnerInfo registerPartner(PartnerInfo partnerInfo) {
+        Map<String, Double> coordinates = geoLocationService.getCoordinates(partnerInfo.getAddress());
+        partnerInfo.setLatitude(coordinates.get("latitude"));
+        partnerInfo.setLongitude(coordinates.get("longitude"));
         return partnerInfoRepository.save(partnerInfo);
     }
 

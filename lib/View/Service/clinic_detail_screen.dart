@@ -38,7 +38,8 @@ class _ClinicDetailScreenState extends State<ClinicDetailScreen> {
     final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/clinics/$clinicName'));
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final decodedData = jsonDecode(utf8.decode(response.bodyBytes));
+      return decodedData;
     } else {
       throw Exception('Failed to load clinic details');
     }
@@ -81,7 +82,7 @@ class _ClinicDetailScreenState extends State<ClinicDetailScreen> {
                   width: double.infinity,
                   child: clinic['imageUrl'] != null && clinic['imageUrl'] != ""
                       ? Image.network(
-                    'http://10.0.2.2:8888/update/img/partners/${clinic['imageUrl']}',
+                    'http://10.0.2.2:8888/${clinic['imageUrl']}',
                     fit: BoxFit.cover,
                   )
                       : Image.asset('assets/images/default-image.jpg'),

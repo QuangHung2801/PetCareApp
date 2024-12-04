@@ -24,6 +24,11 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
 
   bool isVeterinarySelected = false;
   bool isPetCareSelected = false;
+  List<String> suggestedAddresses = [];
+
+  final String apiKey = '103d63fcf3f2442c8ee30c3519e0954d';
+
+
 
   List<Map<String, String>> veterinaryServices = [
     {'label': 'Khám chữa bệnh', 'value': 'VETERINARY_EXAMINATION'},
@@ -127,6 +132,27 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     }
   }
 
+  Future<void> getAddressSuggestions(String query) async {
+    final url = Uri.parse(
+        'https://api.opencagedata.com/geocode/v1/json?q=$query&key=$apiKey&language=vi&countrycode=VN');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final results = data['results'];
+      setState(() {
+        suggestedAddresses = [];
+        for (var result in results) {
+          suggestedAddresses.add(result['formatted']);
+        }
+      });
+    } else {
+      print('Failed to load suggestions');
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,7 +177,33 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
             TextField(
               controller: addressController,
               decoration: InputDecoration(labelText: "Địa chỉ"),
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  getAddressSuggestions(value);
+                } else {
+                  setState(() {
+                    suggestedAddresses.clear();
+                  });
+                }
+              },
             ),
+            const SizedBox(height: 10),
+            // Hiển thị danh sách các địa chỉ gợi ý
+            if (suggestedAddresses.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: suggestedAddresses.map((address) {
+                  return ListTile(
+                    title: Text(address),
+                    onTap: () {
+                      addressController.text = address;
+                      setState(() {
+                        suggestedAddresses.clear();
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
             const SizedBox(height: 10),
             Text("Chọn loại dịch vụ", style: TextStyle(fontWeight: FontWeight.bold)),
             Row(

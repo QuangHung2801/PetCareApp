@@ -29,7 +29,8 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
 
       if (response.statusCode == 200) {
         setState(() {
-          clinicList = json.decode(response.body);
+          final decodedResponse = utf8.decode(response.bodyBytes);
+          clinicList = json.decode(decodedResponse);
           print('Total Clinics: ${clinicList.length}');
 
         });
@@ -90,8 +91,8 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                   clinicName: clinic['businessName'] ?? 'N/A',
                   openingTime: clinic['openingTime'] ?? 'N/A',
                   closingTime: clinic['closingTime'] ?? 'N/A',
-                  rating: clinic['rating'] != null
-                      ? double.tryParse(clinic['rating'].toString())
+                  averageRating: clinic['averageRating'] != null
+                      ? double.tryParse(clinic['averageRating'].toString())
                       : 0.0,
                   imageUrl: clinic['imageUrl'] ?? '',
                 );
@@ -109,14 +110,14 @@ class ClinicItem extends StatelessWidget {
   final String clinicName;
   final String openingTime;
   final String closingTime;
-  final double? rating;
+  final double? averageRating;
   final String imageUrl;
 
   ClinicItem({
     required this.clinicName,
     required this.openingTime,
     required this.closingTime,
-    this.rating,
+    this.averageRating,
     required this.imageUrl,
   });
 
@@ -139,8 +140,8 @@ class ClinicItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
               imageUrl.isNotEmpty
-                  ? 'http://10.0.2.2:8888/update/img/partners/$imageUrl' // Thêm URL gốc nếu cần thiết
-                  : 'http://10.0.2.2:8888/update/img/partners/default_image.jpg', // Hình ảnh mặc định nếu imageUrl trống
+                  ? 'http://10.0.2.2:8888/$imageUrl'
+                  : 'http://10.0.2.2:8888/update/img/partners/default_image.jpg',
               width: 80,
               height: 80,
               fit: BoxFit.cover,
@@ -159,18 +160,20 @@ class ClinicItem extends StatelessWidget {
                 'Giờ mở cửa: $openingTime - $closingTime',
                 style: TextStyle(color: Colors.red, fontSize: 12),
               ),
-              Row(
-                children: List.generate(
-                  5,
-                      (i) => Icon(
-                    Icons.star,
-                    size: 14,
-                    color: i < (rating ?? 0).toInt()
-                        ? Colors.yellow
-                        : Colors.grey,
+              // Chỉ hiển thị phần sao nếu averageRating có giá trị khác null và lớn hơn 0
+              if (averageRating != null && averageRating! > 0)
+                Row(
+                  children: List.generate(
+                    5,
+                        (i) => Icon(
+                      Icons.star,
+                      size: 14,
+                      color: i < (averageRating ?? 0).toInt()
+                          ? Colors.yellow
+                          : Colors.grey,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           trailing: Icon(Icons.arrow_forward_ios, color: Colors.black54),
@@ -179,3 +182,4 @@ class ClinicItem extends StatelessWidget {
     );
   }
 }
+

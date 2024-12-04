@@ -39,7 +39,8 @@ class _CareDetailScreenState extends State<CareDetailScreen> {
     final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/clinics/$careName'));
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final decodedData = jsonDecode(utf8.decode(response.bodyBytes));
+      return decodedData;
     } else {
       throw Exception('Failed to load care details');
     }
@@ -81,7 +82,7 @@ class _CareDetailScreenState extends State<CareDetailScreen> {
                   width: double.infinity,
                   child: care['imageUrl'] != null && care['imageUrl'] != ""
                       ? Image.network(
-                    'http://10.0.2.2:8888/update/img/partners/${care['imageUrl']}',
+                    'http://10.0.2.2:8888/${care['imageUrl']}',
                     fit: BoxFit.cover,
                   )
                       : Image.asset('assets/images/default-image.jpg'),

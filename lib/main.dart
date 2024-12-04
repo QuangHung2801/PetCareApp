@@ -7,6 +7,7 @@ import 'View/PetProfile/PetCareManagement.dart';
 import 'View/Service/PetServicesPage.dart';
 import 'View/PetProfile/PetProfile.dart';
 import 'View/Service/ServiceScreen.dart';
+import 'View/Work/ListReview.dart';
 
 void main() {
   runApp(const MyApp());
@@ -52,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
     HomePageSociety(),
     ExplorePage(),
     ServiceScreen(),
-    PetServicesPage(),
+    CompletedAppointmentsScreen(),
     HomePage(),
   ];
 

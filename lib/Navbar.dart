@@ -17,7 +17,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Bảng tin'),
         BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: 'Tin tức '),
         BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Thú cưng'),
-        BottomNavigationBarItem(icon: Icon(Icons.room_service_outlined), label: 'Dịch vụ'),
+        BottomNavigationBarItem(icon: Icon(Icons.access_time), label: 'Hoạt động'),
         BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),
       ],
       currentIndex: currentIndex,

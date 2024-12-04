@@ -12,7 +12,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
   late TabController _tabController;
   List<dynamic> pendingAppointments = [];
   List<dynamic> confirmedAppointments = [];
-  // List<dynamic> completedAppointments = [];
+  List<dynamic> completedAppointments = [];
   List<dynamic> cancelledAppointments = [];
   String? jsessionId;
   String? userId;
@@ -21,7 +21,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // Added a new tab for completed appointments
     _loadJSessionId();
   }
 
@@ -31,16 +31,16 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
     super.dispose();
   }
 
-  // Hàm lấy JSESSIONID từ SharedPreferences
+  // Function to load JSESSIONID from SharedPreferences
   Future<void> _loadJSessionId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     jsessionId = prefs.getString('JSESSIONID');
-    userId=prefs.getString('userId');
+    userId = prefs.getString('userId');
     if (jsessionId != null) {
       _fetchAppointments();
     }
     if (jsessionId != null && userId != null) {
-      await _fetchPartnerInfo(); // Gọi hàm lấy thông tin PartnerInfo
+      await _fetchPartnerInfo(); // Fetch partner information
     }
   }
 
@@ -57,10 +57,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          partnerId = data['id'].toString(); // Lấy ID của PartnerInfo
+          partnerId = data['id'].toString();
         });
-        // Sau khi có partnerId, gọi API để lấy danh sách lịch hẹn
-        _fetchAppointments();
+        _fetchAppointments(); // Fetch appointments after obtaining partnerId
       } else {
         print('Failed to load partner info: ${response.statusCode}');
       }
@@ -82,8 +81,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
       );
       if (response.statusCode == 200) {
         print("Appointment status updated successfully.");
-        // Tải lại danh sách lịch hẹn sau khi cập nhật
-        await _fetchAppointments();
+        await _fetchAppointments(); // Reload appointments after updating
       } else {
         print("Failed to update status: ${response.statusCode}");
       }
@@ -92,17 +90,17 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
     }
   }
 
-  // Hàm gọi API lấy danh sách lịch hẹn dựa trên trạng thái
+  // Function to fetch all appointments by their status
   Future<void> _fetchAppointments() async {
     await _fetchAppointmentsByStatus('pending', pendingAppointments);
     await _fetchAppointmentsByStatus('confirmed', confirmedAppointments);
+    await _fetchAppointmentsByStatus('completed', completedAppointments);
     await _fetchAppointmentsByStatus('rejected', cancelledAppointments);
-    setState(() {}); // Cập nhật giao diện
+    setState(() {});
   }
 
-  // Hàm gọi API lấy danh sách lịch hẹn theo status
   Future<void> _fetchAppointmentsByStatus(String status, List<dynamic> list) async {
-    if (partnerId == null) return; // Kiểm tra nếu chưa có partnerId
+    if (partnerId == null) return; // Return if partnerId is not set yet
     final url = Uri.parse('http://10.0.2.2:8888/api/partner/appointments/$status?partnerId=$partnerId');
     try {
       final response = await http.get(
@@ -133,6 +131,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
           tabs: [
             Tab(text: "Chờ xác nhận"),
             Tab(text: "Đã xác nhận"),
+            Tab(text: "Đã hoàn thành"), // Added completed tab
             Tab(text: "Đã huỷ"),
           ],
         ),
@@ -142,6 +141,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
         children: [
           _buildAppointmentList(pendingAppointments, "Chờ xác nhận"),
           _buildAppointmentList(confirmedAppointments, "Đã xác nhận"),
+          _buildAppointmentList(completedAppointments, "Đã hoàn thành"),
           _buildAppointmentList(cancelledAppointments, "Đã huỷ"),
         ],
       ),
@@ -165,7 +165,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (status == "Chờ xác nhận") // Chỉ hiển thị nếu trạng thái là chờ xác nhận
+                if (status == "Chờ xác nhận") // Options for "Pending" appointments
                   IconButton(
                     icon: Icon(Icons.check, color: Colors.green),
                     onPressed: () => _updateAppointmentStatus(appointment['id'], 'CONFIRMED'),
@@ -175,10 +175,15 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
                     icon: Icon(Icons.cancel, color: Colors.red),
                     onPressed: () => _updateAppointmentStatus(appointment['id'], 'REJECTED'),
                   ),
+                if (status == "Đã xác nhận") // Option for "Confirmed" appointments
+                  IconButton(
+                    icon: Icon(Icons.done, color: Colors.blue),
+                    onPressed: () => _updateAppointmentStatus(appointment['id'], 'COMPLETED'),
+                  ),
               ],
             ),
             onTap: () {
-              // Xử lý khi người dùng bấm vào chi tiết lịch hẹn
+              // Handle tap to show appointment details if needed
             },
           ),
         );

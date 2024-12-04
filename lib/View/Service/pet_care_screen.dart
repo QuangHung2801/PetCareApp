@@ -29,7 +29,8 @@ class _PetCareScreenState extends State<PetCareScreen> {
 
       if (response.statusCode == 200) {
         setState(() {
-          petCareList = json.decode(response.body);
+          final decodedResponse = utf8.decode(response.bodyBytes);
+          petCareList = json.decode(decodedResponse);
           print('Total Pet Care Services: ${petCareList.length}');
         });
       } else {
@@ -78,16 +79,19 @@ class _PetCareScreenState extends State<PetCareScreen> {
                 final service = petCareList[index];
                 return PetCareItem(
                   careName: service['businessName'] ?? 'N/A',
-                  rating: service['rating'] != null
-                      ? double.tryParse(service['rating'].toString())
-                      : 0.0,
+                  averageRating: service['averageRating'] != null
+                      ? double.tryParse(service['averageRating'].toString())
+                      : null,
+                  openingTime: service['openingTime'] ?? 'N/A',
+                  closingTime: service['closingTime'] ?? 'N/A',
                   imageUrl: service['imageUrl'] ?? '',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            CareDetailScreen(careName: service['businessName'] ?? 'N/A'),
+                        builder: (context) => CareDetailScreen(
+                          careName: service['businessName'] ?? 'N/A',
+                        ),
                       ),
                     );
                   },
@@ -105,13 +109,17 @@ class _PetCareScreenState extends State<PetCareScreen> {
 // Widget PetCareItem
 class PetCareItem extends StatelessWidget {
   final String careName;
-  final double? rating;
+  final double? averageRating;
+  final String openingTime;
+  final String closingTime;
   final String imageUrl;
   final VoidCallback onTap;
 
   PetCareItem({
     required this.careName,
-    this.rating,
+    this.averageRating,
+    required this.openingTime,
+    required this.closingTime,
     required this.imageUrl,
     required this.onTap,
   });
@@ -128,7 +136,7 @@ class PetCareItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
               imageUrl.isNotEmpty
-                  ? 'http://10.0.2.2:8888/update/img/partners/$imageUrl' // Thêm URL gốc nếu cần thiết
+                  ? 'http://10.0.2.2:8888/$imageUrl' // Thêm URL gốc nếu cần thiết
                   : 'http://10.0.2.2:8888/update/img/partners/default_image.jpg', // Hình ảnh mặc định nếu imageUrl trống
               width: 80,
               height: 80,
@@ -144,19 +152,21 @@ class PetCareItem extends StatelessWidget {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: List.generate(
-                  5,
-                      (i) => Icon(
-                    Icons.star,
-                    size: 14,
-                    color: i < (rating ?? 0).toInt() ? Colors.yellow : Colors.grey,
+              if (averageRating != null && averageRating! > 0) ...[
+                Row(
+                  children: List.generate(
+                    5,
+                        (i) => Icon(
+                      Icons.star,
+                      size: 14,
+                      color: i < (averageRating ?? 0).toInt() ? Colors.yellow : Colors.grey,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 4),
+                SizedBox(height: 4),
+              ],
               Text(
-                'Dịch vụ chăm sóc thú cưng',
+                'Giờ mở cửa: $openingTime - $closingTime',
                 style: TextStyle(color: Colors.black54, fontSize: 12),
               ),
             ],

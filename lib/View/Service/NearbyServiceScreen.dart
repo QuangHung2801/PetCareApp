@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-// import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import 'clinic_detail_screen.dart';
@@ -24,45 +24,48 @@ class _NearbyServiceScreenState extends State<NearbyServiceScreen> {
   @override
   void initState() {
     super.initState();
-    // _getCurrentLocation();
+    _getCurrentLocation();
+
   }
 
-  // Future<void> _getCurrentLocation() async {
-  //   try {
-  //     // Kiểm tra quyền
-  //     bool _serviceEnabled = await location.serviceEnabled();
-  //     if (!_serviceEnabled) {
-  //       _serviceEnabled = await location.requestService();
-  //       if (!_serviceEnabled) {
-  //         _showErrorDialog('Dịch vụ vị trí chưa được bật.');
-  //         return;
-  //       }
-  //     }
-  //
-  //     PermissionStatus _permissionGranted = await location.hasPermission();
-  //     if (_permissionGranted == PermissionStatus.denied) {
-  //       _permissionGranted = await location.requestPermission();
-  //       if (_permissionGranted != PermissionStatus.granted) {
-  //         _showErrorDialog('Quyền truy cập vị trí bị từ chối.');
-  //         return;
-  //       }
-  //     }
-  //
-  //     // Lấy vị trí hiện tại
-  //     final _locationData = await location.getLocation();
-  //     setState(() {
-  //       latitude = _locationData.latitude;
-  //       longitude = _locationData.longitude;
-  //     });
-  //
-  //     print('latitude: $latitude');
-  //     print('longitude: $longitude');
-  //     fetchClinicList(); // Tải lại danh sách phòng khám
-  //   } catch (e) {
-  //     print('Error fetching location: $e');
-  //     _showErrorDialog('Lỗi khi lấy vị trí hiện tại.');
-  //   }
-  // }
+  Future<void> _getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showErrorDialog('Dịch vụ vị trí chưa được bật.');
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          _showErrorDialog('Quyền truy cập vị trí bị từ chối.');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showErrorDialog('Quyền truy cập vị trí bị từ chối vĩnh viễn.');
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+
+      setState(() {
+        latitude = position.latitude;
+        longitude = position.longitude;
+      });
+
+      print('latitude: $latitude, longitude: $longitude');
+      fetchClinicList(); // Tải lại danh sách phòng khám
+    } catch (e) {
+      print('Error fetching location: $e');
+      _showErrorDialog('Lỗi khi lấy vị trí hiện tại.');
+    }
+  }
 
   Future<void> fetchClinicList() async {
     if (latitude == null || longitude == null) {

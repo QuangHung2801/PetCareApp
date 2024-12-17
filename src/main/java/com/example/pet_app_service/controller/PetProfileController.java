@@ -2,8 +2,12 @@ package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.Validtion.ValidUserId;
 import com.example.pet_app_service.entity.PetProfile;
+import com.example.pet_app_service.entity.Post;
 import com.example.pet_app_service.entity.User;
+import com.example.pet_app_service.repository.PetProfileRepository;
+import com.example.pet_app_service.repository.PostRepository;
 import com.example.pet_app_service.service.PetProfileService;
+import com.example.pet_app_service.service.PostService;
 import com.example.pet_app_service.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -33,14 +37,19 @@ public class PetProfileController {
 
     private final PetProfileService petProfileService;
     private final UserService userService;
+    private final PostService postService;
+    @Autowired
+    private PetProfileRepository petProfileRepository;
+
 
 
     // Đường dẫn nơi lưu trữ hình ảnh
-    private final String UPLOAD_DIR = "src/main/resources/static/update/img/pets/";
+    private final String UPLOAD_DIR = "src/main/resources/static/update/img/pots/";
 
-    public PetProfileController(PetProfileService petProfileService, UserService userService) {
+    public PetProfileController(PetProfileService petProfileService, UserService userService, PostService postService) {
         this.petProfileService = petProfileService;
         this.userService = userService;
+        this.postService = postService;
     }
 
 
@@ -248,5 +257,33 @@ public class PetProfileController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PetProfile>> getUserPets(@PathVariable Long userId) {
+        // Lấy danh sách thú cưng của người dùng
+
+        List<PetProfile> pets = petProfileService.getPetProfilesByUserId(userId);
+
+
+        // Lấy người dùng theo userId
+        User user = userService.findById(userId);
+
+//        // Giả sử rằng bạn muốn tạo một bài đăng mới cho mỗi thú cưng của người dùng
+//        for (PetProfile pet : pets) {
+//            Post post = new Post();
+//            post.setTitle("Bài đăng của thú cưng: " + pet.getName());  // Tiêu đề bài đăng
+//            post.setContent("Nội dung bài đăng về thú cưng " + pet.getName());
+////            post.setImageUrl("url hình ảnh bài đăng");  // Thêm URL hình ảnh nếu có
+//            post.setUser(user);  // Gán người dùng
+//            post.setPetProfile(pet);  // Gán thú cưng
+//
+//            // Lưu bài đăng vào cơ sở dữ liệu
+//            postService.savePost(post); // Lưu và nhận về bài đăng đã lưu
+//
+//        }
+
+        // Trả về danh sách thú cưng của người dùng
+        return ResponseEntity.ok(pets);
     }
 }

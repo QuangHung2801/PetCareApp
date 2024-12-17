@@ -67,19 +67,19 @@ class _CompletedAppointmentsScreenState extends State<CompletedAppointmentsScree
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Completed Appointments'),
+        title: const Text('Nhật ký'),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : appointments.isEmpty
-          ? const Center(child: Text('No completed appointments found.'))
+          ? const Center(child: Text('chưa có.'))
           : ListView.builder(
         itemCount: appointments.length,
         itemBuilder: (context, index) {
           final appointment = appointments[index];
           return Card(
             child: ListTile(
-              title: Text('Appointment ${appointment['id']}'),
+              title: Text('Dịch vụ ${appointment['id']}'),
               subtitle: Text('Date: ${appointment['date']}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

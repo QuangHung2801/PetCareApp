@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void   main() {
+void main() {
   runApp(MyApp());
 }
 
@@ -21,42 +21,74 @@ class ExplorePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text('07:11', style: TextStyle(color: Colors.black)),
+        title: Text(
+          '07:11',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+        ),
         centerTitle: false,
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Text("Khám phá", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          SizedBox(height: 16),
-          Text("Bản tin Pet", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 16),
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Image.network('banner4.jpg'),  // Thay bằng URL ảnh thực
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Pety Adoption - Tìm mái ấm mới cho các bạn chó...',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications, color: Colors.orange),
+            onPressed: () {
+              // Xử lý thông báo
+            },
           ),
-          SizedBox(height: 16),
-          Text("Bảng vàng Pety", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 16),
-          UserRow(name: "Lê Mỹ Nhân"),
-          UserRow(name: "Hình Hoàng Thuận Thiên"),
-          UserRow(name: "Thu Hiền"),
         ],
       ),
-
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Khám phá",
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange),
+            ),
+            SizedBox(height: 16),
+            Text(
+              "Bản tin Pet",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            SizedBox(height: 16),
+            Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      'assets/dog.jpg', // Thay bằng ảnh thực
+                      height: 180,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Text(
+                        'Pety Adoption - Tìm mái ấm mới cho các bạn thú cưng!',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              "Bảng vàng Pety",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            SizedBox(height: 16),
+            ...[
+              "Lê Mỹ Nhân",
+              "Hình Hoàng Thuận Thiên",
+              "Thu Hiền",
+            ].map((name) => UserRow(name: name)).toList(),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -69,20 +101,32 @@ class UserRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 24,
-            // backgroundImage: NetworkImage('https://example.com/avatar_image.jpg'),  // Thay bằng URL ảnh thực
+            radius: 30,
+            backgroundImage: AssetImage('assets/dog.jpg'), // Thay bằng ảnh thực
           ),
           SizedBox(width: 16),
-          Expanded(child: Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+          Expanded(
+            child: Text(
+              name,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+          ),
           ElevatedButton(
-            onPressed: () {},
-            child: Text('Theo dõi'),
+            onPressed: () {
+              // Xử lý nút Theo dõi
+            },
+            child: Text(
+              'Theo dõi',
+              style: TextStyle(fontSize: 14),
+            ),
             style: ElevatedButton.styleFrom(
-              shape: StadiumBorder(), backgroundColor: Colors.orange,
+              shape: StadiumBorder(),
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
             ),
           ),
         ],

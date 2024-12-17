@@ -8,7 +8,6 @@ import 'NoticationsPage.dart';
 import 'PartnerProfilePage.dart';
 import 'Partner_Navbar.dart';
 
-
 void main() {
   runApp(MyApp());
 }
@@ -17,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Pet Care Partner Dashboard',
+      title: 'Bảng Điều Khiển Đối Tác Chăm Sóc Thú Cưng',
       home: PartnerHomePage(),
     );
   }
@@ -56,14 +55,12 @@ class _PartnerHomePageState extends State<PartnerHomePage> {
   }
 }
 
-
-
 class PartnerDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pet Care Partner Dashboard"),
+        title: Text("Bảng Điều Khiển Đối Tác Chăm Sóc Thú Cưng"),
         actions: [
           IconButton(
             icon: Icon(Icons.logout, color: Colors.red),
@@ -91,33 +88,28 @@ class PartnerDashboardPage extends StatelessWidget {
   Widget _buildPartnerInfo() {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Text('Partner Info'),
+      child: Text('Thông Tin Đối Tác'),
     );
   }
 
   Widget _buildServiceManagementSection() {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Text('Service Management Section'),
+      child: Text('Quản Lý Dịch Vụ'),
     );
   }
 
   Widget _buildAppointmentSection() {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Text('Appointment Section'),
+      child: Text('Lịch Hẹn'),
     );
   }
 
   Widget _buildPetList() {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Text('Pet List'),
+      child: Text('Danh Sách Thú Cưng'),
     );
   }
 }
-
-
-
-
-

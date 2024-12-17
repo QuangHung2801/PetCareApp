@@ -147,14 +147,14 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text("Menu"),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.mail),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.search),
+          //   onPressed: () {},
+          // ),
+          // IconButton(
+          //   icon: Icon(Icons.mail),
+          //   onPressed: () {},
+          // ),
         ],
       ),
       body: ListView(
@@ -271,19 +271,10 @@ class _HomePageState extends State<HomePage> {
           icon: Icons.nfc,
           title: "Pet Smart NFC",
         ),
-        SizedBox(height: 16),
-        _buildMenuOptionCard(
-          icon: Icons.map,
-          title: "Địa chỉ",
-        ),
-        SizedBox(height: 16),
-        _buildMenuOptionCard(
-          icon: Icons.pets,
-          title: "Dịch vụ thú cưng",
-        ),
       ],
     );
   }
+
 
   Widget _buildMenuOptionCard({required IconData icon, required String title, String? subtitle, String? trailing ,VoidCallback? onTap}) {
 
@@ -348,7 +339,7 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
             child: Text(
-              'Gia đình của bạn có ${petProfiles.length} thành viên',
+              'Bạn có ${petProfiles.length} profile thú cưng',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),

@@ -41,13 +41,14 @@ class _ServiceScreenState extends State<ServiceScreen> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Dịch vụ', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
       ),

@@ -85,6 +85,7 @@ class _PetCareScreenState extends State<PetCareScreen> {
                   openingTime: service['openingTime'] ?? 'N/A',
                   closingTime: service['closingTime'] ?? 'N/A',
                   imageUrl: service['imageUrl'] ?? '',
+                  isOpen:service['isOpen'],
                   onTap: () {
                     Navigator.push(
                       context,
@@ -112,6 +113,7 @@ class PetCareItem extends StatelessWidget {
   final double? averageRating;
   final String openingTime;
   final String closingTime;
+  final bool isOpen;
   final String imageUrl;
   final VoidCallback onTap;
 
@@ -120,14 +122,42 @@ class PetCareItem extends StatelessWidget {
     this.averageRating,
     required this.openingTime,
     required this.closingTime,
+    required this.isOpen,
     required this.imageUrl,
     required this.onTap,
   });
 
+  bool _checkIfClinicIsOpen(String openingTime, String closingTime, bool isOpen) {
+    final now = DateTime.now();
+
+    if (!isOpen) {
+      return false;
+    }
+
+    final opening = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(openingTime.split(":")[0]),
+      int.parse(openingTime.split(":")[1]),
+    );
+    final closing = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(closingTime.split(":")[0]),
+      int.parse(closingTime.split(":")[1]),
+    );
+
+    return now.isAfter(opening) && now.isBefore(closing);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isClinicOpen = _checkIfClinicIsOpen(openingTime, closingTime, isOpen);
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: isClinicOpen ? onTap : null,
       child: Card(
         color: Colors.white,
         margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -136,8 +166,8 @@ class PetCareItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
               imageUrl.isNotEmpty
-                  ? 'http://10.0.2.2:8888/$imageUrl' // Thêm URL gốc nếu cần thiết
-                  : 'http://10.0.2.2:8888/update/img/partners/default_image.jpg', // Hình ảnh mặc định nếu imageUrl trống
+                  ? 'http://10.0.2.2:8888/$imageUrl'
+                  : 'http://10.0.2.2:8888/update/img/partners/default_image.jpg',
               width: 80,
               height: 80,
               fit: BoxFit.cover,
@@ -147,11 +177,19 @@ class PetCareItem extends StatelessWidget {
           ),
           title: Text(
             careName,
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isClinicOpen ? Colors.black : Colors.red,
+            ),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!isClinicOpen)
+                Text(
+                  'Hiện đang đóng cửa',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
               if (averageRating != null && averageRating! > 0) ...[
                 Row(
                   children: List.generate(

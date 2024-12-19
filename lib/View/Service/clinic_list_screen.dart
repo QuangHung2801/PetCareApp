@@ -32,7 +32,6 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
           final decodedResponse = utf8.decode(response.bodyBytes);
           clinicList = json.decode(decodedResponse);
           print('Total Clinics: ${clinicList.length}');
-
         });
         clinicList.forEach((clinic) {
           print('Image URL: ${clinic['imageUrl']}');
@@ -87,6 +86,12 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
               itemCount: clinicList.length,
               itemBuilder: (context, index) {
                 final clinic = clinicList[index];
+                bool isOpen = _checkIfClinicIsOpen(
+                  clinic['openingTime'],
+                  clinic['closingTime'],
+                  clinic['isOpen'],
+                );
+
                 return ClinicItem(
                   clinicName: clinic['businessName'] ?? 'N/A',
                   openingTime: clinic['openingTime'] ?? 'N/A',
@@ -95,6 +100,7 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                       ? double.tryParse(clinic['averageRating'].toString())
                       : 0.0,
                   imageUrl: clinic['imageUrl'] ?? '',
+                  isOpen: isOpen,
                 );
               },
             ),
@@ -104,6 +110,23 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
       backgroundColor: Colors.white,
     );
   }
+
+  // Hàm kiểm tra nếu phòng khám đang mở dựa trên giờ
+  // Hàm kiểm tra nếu phòng khám đang mở dựa trên giờ
+  bool _checkIfClinicIsOpen(String openingTime, String closingTime, bool isOpen) {
+    final now = DateTime.now();
+
+    // Nếu phòng khám đã quyết định đóng cửa sớm
+    if (!isOpen) {
+      return false;  // Trả về false nếu đóng cửa sớm
+    }
+
+    // Kiểm tra giờ mở cửa và đóng cửa bình thường
+    final opening = DateTime(now.year, now.month, now.day, int.parse(openingTime.split(":")[0]), int.parse(openingTime.split(":")[1]));
+    final closing = DateTime(now.year, now.month, now.day, int.parse(closingTime.split(":")[0]), int.parse(closingTime.split(":")[1]));
+
+    return now.isAfter(opening) && now.isBefore(closing);
+  }
 }
 
 class ClinicItem extends StatelessWidget {
@@ -112,6 +135,7 @@ class ClinicItem extends StatelessWidget {
   final String closingTime;
   final double? averageRating;
   final String imageUrl;
+  final bool isOpen;
 
   ClinicItem({
     required this.clinicName,
@@ -119,18 +143,21 @@ class ClinicItem extends StatelessWidget {
     required this.closingTime,
     this.averageRating,
     required this.imageUrl,
+    required this.isOpen,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ClinicDetailScreen(clinicName: clinicName),
-          ),
-        );
+        if (isOpen) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ClinicDetailScreen(clinicName: clinicName),
+            ),
+          );
+        }
       },
       child: Card(
         color: Colors.white,
@@ -160,7 +187,6 @@ class ClinicItem extends StatelessWidget {
                 'Giờ mở cửa: $openingTime - $closingTime',
                 style: TextStyle(color: Colors.red, fontSize: 12),
               ),
-              // Chỉ hiển thị phần sao nếu averageRating có giá trị khác null và lớn hơn 0
               if (averageRating != null && averageRating! > 0)
                 Row(
                   children: List.generate(
@@ -174,12 +200,26 @@ class ClinicItem extends StatelessWidget {
                     ),
                   ),
                 ),
+              // Nếu phòng khám không mở, hiển thị thông báo
+              if (!isOpen)
+                Row(
+                  children: [
+                    Icon(Icons.cancel, color: Colors.red),
+                    SizedBox(width: 4),
+                    Text(
+                      'Đóng cửa',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
             ],
           ),
-          trailing: Icon(Icons.arrow_forward_ios, color: Colors.black54),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            color: isOpen ? Colors.black54 : Colors.grey, // Chỉ cho phép nhấn nếu mở cửa
+          ),
         ),
       ),
     );
   }
 }
-

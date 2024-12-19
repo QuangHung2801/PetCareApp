@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PartnerProfilePage extends StatefulWidget {
   @override
@@ -48,12 +48,16 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
     print("UserId: $userId");
-    final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/partner/show/$userId'));
+
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:8888/api/partner/show/$userId'),
+      headers: {'Content-Type': 'application/json; charset=utf-8'}, // Ensure UTF-8 encoding for the request
+    );
 
     if (response.statusCode == 200) {
       print(response.body);  // Print raw response to check data
       try {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(utf8.decode(response.bodyBytes)); // Decode response using UTF-8
         setState(() {
           businessName = data['businessName'] ?? "Thông tin không có sẵn";
           businessCode = data['businessCode'] ?? "Thông tin không có sẵn";
@@ -75,6 +79,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
           }))
               : [];
 
+
           // Cập nhật danh sách dịch vụ theo loại dịch vụ
           if (serviceCategory == "PET_CARE") {
             allServices = [
@@ -95,7 +100,6 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
     }
   }
 
-
   Future<void> updatePartnerInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
@@ -107,7 +111,7 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
 
     final response = await http.put(
       Uri.parse('http://10.0.2.2:8888/api/partner/update-partner-info/$userId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json; charset=utf-8'}, // Ensure UTF-8 encoding for the request
       body: jsonEncode({
         'businessName': businessName,
         'businessCode': businessCode,

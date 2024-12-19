@@ -21,12 +21,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (response.statusCode == 200) {
       setState(() {
-        pendingPartners = json.decode(response.body);
+        // Decode JSON với UTF-8 để đảm bảo ký tự đặc biệt hiển thị đúng
+        pendingPartners = json.decode(utf8.decode(response.bodyBytes));
       });
     } else {
       throw Exception('Failed to load pending partners');
     }
   }
+
 
   Future<void> _approvePartner(int id) async {
     final response = await http.put(Uri.parse('http://10.0.2.2:8888/api/partner/approve/$id'));

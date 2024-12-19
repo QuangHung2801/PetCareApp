@@ -57,6 +57,8 @@ class _NearbyServiceScreenState extends State<NearbyServiceScreen> {
       setState(() {
         latitude = position.latitude;
         longitude = position.longitude;
+        // latitude = 10.7831;
+        // longitude =106.5969;
       });
 
       print('latitude: $latitude, longitude: $longitude');
@@ -196,6 +198,7 @@ class _NearbyServiceScreenState extends State<NearbyServiceScreen> {
                       ? double.tryParse(clinic['averageRating'].toString())
                       : 0.0,
                   imageUrl: clinic['imageUrl'] ?? '',
+                  isOpen: clinic['isOpen'] ,
                 );
               },
             ),
@@ -212,6 +215,7 @@ class ClinicItem extends StatelessWidget {
   final String closingTime;
   final double? averageRating;
   final String imageUrl;
+  final bool isOpen;
 
   ClinicItem({
     required this.clinicName,
@@ -219,19 +223,51 @@ class ClinicItem extends StatelessWidget {
     required this.closingTime,
     this.averageRating,
     required this.imageUrl,
+    required this.isOpen,
   });
+
+  bool _checkIfClinicIsOpen(String openingTime, String closingTime,
+      bool isOpen) {
+    final now = DateTime.now();
+
+    if (!isOpen) {
+      return false;
+    }
+
+    final opening = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(openingTime.split(":")[0]),
+      int.parse(openingTime.split(":")[1]),
+    );
+    final closing = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(closingTime.split(":")[0]),
+      int.parse(closingTime.split(":")[1]),
+    );
+
+    return now.isAfter(opening) && now.isBefore(closing);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isCurrentlyOpen = _checkIfClinicIsOpen(
+        openingTime, closingTime, isOpen);
+
     return GestureDetector(
-      onTap: () {
+      onTap: isCurrentlyOpen
+          ? () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ClinicDetailScreen(clinicName: clinicName),
           ),
         );
-      },
+      }
+          : null,
       child: Card(
         margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
         child: ListTile(
@@ -248,36 +284,45 @@ class ClinicItem extends StatelessWidget {
           ),
           title: Text(
             clinicName,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isCurrentlyOpen ? Colors.black : Colors.red,
+            ),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Giờ mở cửa: $openingTime - $closingTime',
-                style: TextStyle(color: Colors.grey[600]),
+                isCurrentlyOpen
+                    ? 'Giờ mở cửa: $openingTime - $closingTime'
+                    : 'Đã đóng cửa',
+                style: TextStyle(
+                  color: isCurrentlyOpen ? Colors.grey[600] : Colors.red,
+                ),
               ),
-              Row(
-                children: [
-                  RatingBar.builder(
-                    initialRating: averageRating ?? 0.0,
-                    minRating: 0,
-                    itemSize: 20,
-                    itemBuilder: (context, _) => Icon(
-                      Icons.star,
-                      color: Colors.amber,
+              if (isCurrentlyOpen)
+                Row(
+                  children: [
+                    RatingBar.builder(
+                      initialRating: averageRating ?? 0.0,
+                      minRating: 0,
+                      itemSize: 20,
+                      itemBuilder: (context, _) =>
+                          Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                      onRatingUpdate: (rating) {},
+                      ignoreGestures: true,
                     ),
-                    onRatingUpdate: (rating) {},
-                    ignoreGestures: true,
-                  ),
-                  Text(averageRating != null
-                      ? averageRating!.toStringAsFixed(1)
-                      : 'N/A'),
-                ],
-              ),
+                    Text(averageRating != null
+                        ? averageRating!.toStringAsFixed(1)
+                        : 'N/A'),
+                  ],
+                ),
             ],
           ),
-          trailing: Icon(Icons.arrow_forward_ios),
+          trailing: isCurrentlyOpen ? Icon(Icons.arrow_forward_ios) : null,
         ),
       ),
     );

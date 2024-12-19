@@ -2,12 +2,14 @@ package com.example.pet_app_service.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,15 +39,26 @@ public class Post {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @JsonBackReference
-    @ManyToOne
+//    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @JsonBackReference
+
     @ManyToOne
     @JoinColumn(name = "pet_id", nullable = false)
+//    @JsonBackReference
     private PetProfile petProfile;
+
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<Like> likes;
+
+    @Column(name = "like_count", nullable = false)
+    private int likeCount = 0;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>(); // Đảm bảo khởi tạo mảng
 
 
     public Post() {
@@ -117,5 +130,9 @@ public class Post {
 
     public void setPetProfile(PetProfile petProfile) {
         this.petProfile = petProfile;
+    }
+
+    public Post(Long id) {
+        this.id = id;
     }
 }

@@ -16,5 +16,15 @@ public class PostService {
         postRepository.save(post);
         return post;
     }
+
+    // Lấy tên người dùng từ bài đăng
+    public String getUserNameByPostId(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
+        return post.getUser().getName(); // Giả sử User có trường name
+    }
+    public Post findById(Long postId) {
+        return postRepository.findById(postId).orElse(null); // Trả về null nếu không tìm thấy post
+    }
 }
 

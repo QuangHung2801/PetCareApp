@@ -74,8 +74,22 @@ public class PostController {
     // Hiển thị tất cả bài đăng
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
-        List<Post> posts = postRepository.findAll();
+        List<Post> posts = postRepository.findAllPostsWithUsernames();
+        for (Post post : posts) {
+            post.getUser().setName(post.getUser().getName());
+        }
+
+        posts.forEach(post -> {
+            System.out.println("Post ID: " + post.getId());
+            System.out.println("Post Title: " + post.getTitle());
+            System.out.println("Post Content: " + post.getContent());
+            System.out.println("User Name: " + post.getUser().getName());
+            System.out.println("User Email: " + post.getUser().getEmail());
+            System.out.println("-----------------------------");
+        });
+
         return ResponseEntity.ok(posts);
+
     }
 
     @GetMapping("/{userid}")

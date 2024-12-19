@@ -52,6 +52,7 @@ public class User {
 
     @Column(name = "enabled", nullable = false)
     private boolean enabled = true;
+    // Avoid infinite recursion when serializing User
 
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -60,6 +61,9 @@ public class User {
     // Constructor
     public User() {}
 
+    public User(Long id) {
+        this.id = id;
+    }
     // Getters and Setters
     public Long getId() {
         return id;
@@ -108,4 +112,5 @@ public class User {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
 }

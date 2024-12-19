@@ -3,6 +3,7 @@ package com.example.pet_app_service.controller;
 import com.example.pet_app_service.entity.PartnerInfo;
 import com.example.pet_app_service.entity.Role;
 import com.example.pet_app_service.entity.User;
+import com.example.pet_app_service.repository.PartnerInfoRepository;
 import com.example.pet_app_service.repository.RoleRepository;
 import com.example.pet_app_service.service.PartnerInfoService;
 import com.example.pet_app_service.repository.UserRepository;
@@ -42,6 +43,9 @@ public class PartnerInfoController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PartnerInfoRepository partnerInfoRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerPartner(
@@ -275,5 +279,34 @@ public class PartnerInfoController {
                 : partnerSearchService.getNearbyPartners(latitude, longitude);
 
         return ResponseEntity.ok(partners);
+    }
+
+    // Đóng cửa sớm
+    @PostMapping("/closeServiceEarly/{userId}")
+    public ResponseEntity<String> closeServiceEarly(@PathVariable Long userId) {
+        partnerInfoService.closeServiceEarly(userId);
+        return ResponseEntity.ok("Service closed early");
+    }
+
+    // Mở lại dịch vụ
+    @PostMapping("/reopenService/{userId}")
+    public ResponseEntity<String> reopenService(@PathVariable Long userId) {
+        partnerInfoService.reopenService(userId);
+        return ResponseEntity.ok("Service reopened");
+    }
+
+    @GetMapping("/serviceStatus/{userId}")
+    public ResponseEntity<Map<String, Object>> getServiceStatus(@PathVariable Long userId) {
+        // Lấy thông tin đối tác từ cơ sở dữ liệu dựa trên userId
+        Optional<PartnerInfo> partnerInfoOptional = partnerInfoRepository.findByUserId(userId);
+
+
+
+        PartnerInfo partnerInfo = partnerInfoOptional.get();
+        partnerInfo.updateIsOpenStatus(); // Cập nhật trạng thái cửa hàng trước khi trả về
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("isOpen", partnerInfo.getIsOpen()); // Lấy giá trị isOpen
+        return ResponseEntity.ok(response);
     }
 }

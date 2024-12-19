@@ -48,6 +48,20 @@ public class PartnerInfo {
     private double averageRating;
 
     @Column(nullable = false)
+    private boolean isOpen = true; // Mặc định là dịch vụ mở
+
+    // Hàm kiểm tra trạng thái cửa hàng (đang mở hay đóng)
+    public void updateIsOpenStatus() {
+        LocalTime currentTime = LocalTime.now();
+        if (!isOpen) {
+            this.isOpen = false;  // Đảm bảo cửa hàng đóng
+        } else {
+            // Kiểm tra nếu giờ hiện tại nằm trong khung giờ mở cửa và không bị đóng dịch vụ sớm
+            this.isOpen = !currentTime.isBefore(openingTime) && !currentTime.isAfter(closingTime);
+        }
+    }
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ServiceCategory serviceCategory; // Loại dịch vụ
 
@@ -101,5 +115,28 @@ public class PartnerInfo {
 
     public void setAverageRating(double averageRating) {
         this.averageRating = averageRating;
+    }
+
+    public Boolean getIsOpen() {
+        return isOpen; // Default to true if null
+    }
+
+    public void setIsOpen(Boolean isOpen) {
+        this.isOpen = isOpen;
+    }
+
+    // Phương thức để đối tác đóng cửa dịch vụ sớm
+    public void closeServiceEarly() {
+        this.isOpen = false;
+    }
+
+    // Phương thức để đối tác mở lại dịch vụ
+    public void reopenService() {
+        // Kiểm tra nếu dịch vụ bị đóng thủ công (isOpen = false)
+        if (!isOpen) {
+            // Mở lại dịch vụ, trạng thái giờ mở và đóng cửa sẽ được tính lại
+            this.isOpen = true;
+            updateIsOpenStatus(); // Tính lại trạng thái dựa trên giờ mở cửa và đóng cửa
+        }
     }
 }

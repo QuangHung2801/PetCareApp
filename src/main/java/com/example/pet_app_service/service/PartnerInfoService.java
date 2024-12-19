@@ -66,4 +66,35 @@ public class PartnerInfoService {
         return null;
     }
 
+    public void closeServiceEarly(Long userId) {
+        PartnerInfo partnerInfo = partnerInfoRepository.findByUser_Id(userId);
+        if (partnerInfo != null) {
+            partnerInfo.closeServiceEarly();
+            partnerInfoRepository.save(partnerInfo);
+        } else {
+            // Xử lý khi không tìm thấy đối tác
+            System.out.println("Partner not found with userId: " + userId);
+        }
+    }
+
+    public void reopenService(Long userId) {
+        PartnerInfo partnerInfo = partnerInfoRepository.findByUser_Id(userId);
+        if (partnerInfo != null) {
+            partnerInfo.reopenService();
+            partnerInfoRepository.save(partnerInfo);
+        } else {
+            // Xử lý khi không tìm thấy đối tác
+            System.out.println("Partner not found with id: " + userId);
+        }
+    }
+
+    public Boolean getServiceStatus(Long userId) {
+        Optional<PartnerInfo> partnerInfo = partnerInfoRepository.findByUserId(userId);
+        if (partnerInfo.isPresent()) {
+            return partnerInfo.get().getIsOpen(); // Return the service status (true or false)
+        }
+        return false; // Default if partner info not found
+    }
+
+
 }

@@ -62,7 +62,7 @@ public class AnimalCareController {
         response.put("phone", user != null ? user.getPhone() : "");
         response.put("email", user != null ? user.getEmail() : "");
         response.put("averageRating", clinic.getAverageRating());
-
+        response.put("isOpen", clinic.getIsOpen()); // Đảm bảo không có giá trị null
         return ResponseEntity.ok(response);
     }
 

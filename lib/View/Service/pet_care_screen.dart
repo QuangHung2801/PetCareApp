@@ -134,20 +134,15 @@ class PetCareItem extends StatelessWidget {
       return false;
     }
 
-    final opening = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(openingTime.split(":")[0]),
-      int.parse(openingTime.split(":")[1]),
-    );
-    final closing = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(closingTime.split(":")[0]),
-      int.parse(closingTime.split(":")[1]),
-    );
+    final opening = DateTime(now.year, now.month, now.day,
+        int.parse(openingTime.split(":")[0]), int.parse(openingTime.split(":")[1]));
+    final closing = DateTime(now.year, now.month, now.day,
+        int.parse(closingTime.split(":")[0]), int.parse(closingTime.split(":")[1]));
+
+    if (closing.isBefore(opening)) {
+      // Kiểm tra nếu thời gian hiện tại nằm trước giờ đóng hoặc sau giờ mở
+      return now.isAfter(opening) || now.isBefore(closing);
+    }
 
     return now.isAfter(opening) && now.isBefore(closing);
   }

@@ -41,6 +41,8 @@ class _ClinicDetailScreenState extends State<ClinicDetailScreen> {
       final decodedData = jsonDecode(utf8.decode(response.bodyBytes));
       return decodedData;
     } else {
+      print('Response body: ${response.body}');
+      print('Failed to load comments: ${response.statusCode}');
       throw Exception('Failed to load clinic details');
     }
   }
@@ -105,6 +107,7 @@ class _ClinicDetailScreenState extends State<ClinicDetailScreen> {
                       SizedBox(height: 5),
                       Text('Thời gian mở cửa: ${clinic['workingHours'] ?? "Không có thông tin"}'),
                       SizedBox(height: 10),
+                      Text('Thời gian mở cửa: ${clinic['isOpen'] ?? "Không có thông tin"}'),
                       Text(
                         'Dịch vụ: ',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

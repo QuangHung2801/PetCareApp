@@ -116,14 +116,19 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
   bool _checkIfClinicIsOpen(String openingTime, String closingTime, bool isOpen) {
     final now = DateTime.now();
 
-    // Nếu phòng khám đã quyết định đóng cửa sớm
     if (!isOpen) {
-      return false;  // Trả về false nếu đóng cửa sớm
+      return false;
     }
 
-    // Kiểm tra giờ mở cửa và đóng cửa bình thường
-    final opening = DateTime(now.year, now.month, now.day, int.parse(openingTime.split(":")[0]), int.parse(openingTime.split(":")[1]));
-    final closing = DateTime(now.year, now.month, now.day, int.parse(closingTime.split(":")[0]), int.parse(closingTime.split(":")[1]));
+    final opening = DateTime(now.year, now.month, now.day,
+        int.parse(openingTime.split(":")[0]), int.parse(openingTime.split(":")[1]));
+    final closing = DateTime(now.year, now.month, now.day,
+        int.parse(closingTime.split(":")[0]), int.parse(closingTime.split(":")[1]));
+
+    if (closing.isBefore(opening)) {
+      // Kiểm tra nếu thời gian hiện tại nằm trước giờ đóng hoặc sau giờ mở
+      return now.isAfter(opening) || now.isBefore(closing);
+    }
 
     return now.isAfter(opening) && now.isBefore(closing);
   }

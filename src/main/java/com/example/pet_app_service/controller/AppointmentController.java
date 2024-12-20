@@ -113,5 +113,49 @@ public class AppointmentController {
         return ResponseEntity.ok(completedAppointments);
     }
 
+    @GetMapping("/pending")
+    public ResponseEntity<?> getPendingAppointments(@RequestParam String userId) {
+        User currentUser = userService.findById(Long.parseLong(userId));
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found.");
+        }
+
+        List<Appointment> completedAppointments = appointmentService.findAppointmentsByUserAndStatus(currentUser, Appointment.Status.PENDING);
+        if (completedAppointments.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No completed appointments found.");
+        }
+
+        return ResponseEntity.ok(completedAppointments);
+    }
+
+    @GetMapping("/confirmed")
+    public ResponseEntity<?> getConfirmedAppointments(@RequestParam String userId) {
+        User currentUser = userService.findById(Long.parseLong(userId));
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found.");
+        }
+
+        List<Appointment> completedAppointments = appointmentService.findAppointmentsByUserAndStatus(currentUser, Appointment.Status.CONFIRMED);
+        if (completedAppointments.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No completed appointments found.");
+        }
+
+        return ResponseEntity.ok(completedAppointments);
+    }
+
+    @GetMapping("/rejected")
+    public ResponseEntity<?> getRejectedAppointments(@RequestParam String userId) {
+        User currentUser = userService.findById(Long.parseLong(userId));
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found.");
+        }
+
+        List<Appointment> completedAppointments = appointmentService.findAppointmentsByUserAndStatus(currentUser, Appointment.Status.REJECTED);
+        if (completedAppointments.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No completed appointments found.");
+        }
+
+        return ResponseEntity.ok(completedAppointments);
+    }
 
 }

@@ -1,6 +1,8 @@
 package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.*;
+import com.example.pet_app_service.repository.AppointmentRepository;
+import com.example.pet_app_service.repository.ReviewRepository;
 import com.example.pet_app_service.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,9 @@ import java.util.Optional;
 public class AppointmentController {
 
     @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
     private ReviewService reviewService;
     @Autowired
     private PetProfileService petProfileService;
@@ -28,6 +33,9 @@ public class AppointmentController {
     private PartnerInfoService partnerInfoService;
     @Autowired
     private AppointmentService appointmentService;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @PostMapping("/book/{petId}/{partnerId}")
     public ResponseEntity<?> createAppointment(
@@ -156,6 +164,15 @@ public class AppointmentController {
         }
 
         return ResponseEntity.ok(completedAppointments);
+    }
+
+    @GetMapping("/check-review/{appointmentId}")
+    public ResponseEntity<?> checkReviewStatus(@PathVariable Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Lịch hẹn không tồn tại"));
+
+        boolean hasReviewed = reviewRepository.existsByAppointment(appointment);
+        return ResponseEntity.ok(Map.of("hasReviewed", hasReviewed));
     }
 
 }

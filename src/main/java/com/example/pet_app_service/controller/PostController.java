@@ -8,6 +8,7 @@ import com.example.pet_app_service.service.PetProfileService;
 import com.example.pet_app_service.service.PostService;
 import com.example.pet_app_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,37 +39,38 @@ public class PostController {
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<List<Post>> createPost(@RequestParam("content") String content,
-                                                 @RequestParam("petId") Long petId,
-                                                 @RequestParam("images") List<MultipartFile> images,
-                                                 @PathVariable Long userId) throws IOException {
-        // Lấy thú cưng và người dùng
-        List<PetProfile> pets = petProfileService.getPetProfilesByUserId(userId);
+    public ResponseEntity<Post> createPost(@RequestParam("content") String content,
+                                           @RequestParam("petId") Long petId,
+                                           @RequestParam("images") List<MultipartFile> images,
+                                           @PathVariable Long userId) throws IOException {
+        // Lấy người dùng và thú cưng được chỉ định
         User user = userService.findById(userId);
+        PetProfile pet = petProfileService.findPetProfileById(petId);
 
-        List<Post> posts = new ArrayList<>();
-        // Tạo một bài đăng cho mỗi thú cưng
-        for (PetProfile pet : pets) {
-            Post post = new Post();
-            post.setTitle("Bài đăng của thú cưng: " + pet.getName());
-            post.setContent(content);
-            post.setUser(user);
-            post.setPetProfile(pet);
-
-            // Lưu nhiều ảnh
-            List<String> imageUrls = new ArrayList<>();
-            for (MultipartFile image : images) {
-                String imageUrl = saveImage(image); // Lưu ảnh và nhận tên tệp
-                imageUrls.add(imageUrl);
-            }
-            post.setImageUrls(imageUrls); // Sửa lại đây để lưu danh sách tên ảnh vào bài đăng
-
-            // Lưu bài đăng vào cơ sở dữ liệu
-            postService.savePost(post);
-            posts.add(post); // Thêm bài đăng vào danh sách
+        if (pet == null || !pet.getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(null); // Hoặc trả về lỗi tùy theo yêu cầu
         }
 
-        return ResponseEntity.ok(posts); // Trả về danh sách bài đăng đã được tạo
+        // Tạo bài đăng
+        Post post = new Post();
+        post.setTitle("Bài đăng của thú cưng: " + pet.getName());
+        post.setContent(content);
+        post.setUser(user);
+        post.setPetProfile(pet);
+
+        // Lưu nhiều ảnh
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile image : images) {
+            String imageUrl = saveImage(image); // Lưu ảnh và nhận URL
+            imageUrls.add(imageUrl);
+        }
+        post.setImageUrls(imageUrls);
+
+        // Lưu bài đăng vào cơ sở dữ liệu
+        postService.savePost(post);
+
+        return ResponseEntity.ok(post); // Trả về bài đăng đã tạo
     }
 
     // Hiển thị tất cả bài đăng

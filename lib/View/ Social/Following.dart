@@ -520,6 +520,15 @@ class _PostWidgetState extends State<PostWidget> {
                         'Theo dõi',
                         style: TextStyle(color: Colors.blue),
                       ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.grey),
+                        onPressed: () {
+                          // Xử lý khi nhấn vào nút X
+                          setState(() {
+                            // Ví dụ: Xóa bài viết hoặc ẩn bài viết
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -537,11 +546,11 @@ class _PostWidgetState extends State<PostWidget> {
               children: widget.imageUrls.map((imageUrl) {
                 String fullImageUrl = 'http://10.0.2.2:8888/$imageUrl';
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
                   child: Image.network(
                     fullImageUrl,
                     fit: BoxFit.cover,
-                    height: 150,
+                    height: 270,
                     width: double.infinity,
                   ),
                 );

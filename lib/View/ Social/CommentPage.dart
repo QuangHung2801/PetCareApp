@@ -28,56 +28,68 @@ class _CommentPageState extends State<CommentPage> {
       final response = await http.get(url, headers: {'Accept': 'application/json; charset=UTF-8'});
       if (response.statusCode == 200) {
         setState(() {
-          comments = List<Map<String, dynamic>>.from(json.decode(response.body) ?? []);
+          List<dynamic> data = json.decode(response.body) ?? [];
+          comments = data.map<Map<String, dynamic>>((comment) {
+            // Giải mã nội dung và tên người dùng
+            String content = utf8.decode(utf8.encode(comment['content'] ?? 'Nội dung không xác định'));
+            String username = utf8.decode(utf8.encode(comment['user']['name'] ?? 'Tên người dùng không xác định'));
+
+            return {
+              ...comment,
+              'content': content,
+              'user': {'name': username},
+            };
+          }).toList();
         });
       } else {
-        print('Response body: ${response.body}');
-        print('Failed to load comments: ${response.statusCode}');
+        // print('Response body: ${response.body}');
+        // print('Failed to load comments: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
     }
   }
 
+
+
   Future<void> _postComment() async {
     if (_commentController.text.isNotEmpty) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? userId = prefs.getString('userId');
 
-      // Kiểm tra nếu userId là null
       if (userId == null) {
         print('User ID is null');
-        return; // Nếu userId null, không tiếp tục hàm
+        return;
       }
 
       final url = Uri.parse('http://10.0.2.2:8888/api/comments?userId=$userId&postId=${widget.postId}');
-
       try {
         final response = await http.post(
           url,
-          headers: {'Content-Type': 'application/json; charset=UTF-8'}, // Đảm bảo gửi dữ liệu với mã hóa UTF-8
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
           body: json.encode({
-            'content': _commentController.text, // Nội dung bình luận
+            'content': _commentController.text.trim(), // Không cần mã hóa lại
           }),
         );
 
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
         if (response.statusCode == 200) {
           setState(() {
-            comments.add(json.decode(response.body) ?? {}); // Đảm bảo không thêm dữ liệu null
+            final utf8Decoder = Utf8Decoder();
+            var responseData = json.decode(utf8Decoder.convert(response.bodyBytes));
+            comments.add(responseData);
           });
-          _commentController.clear(); // Xóa nội dung trong ô nhập
+          _commentController.clear();
+          print('Response body: ${response.body}');
         } else {
+
           print('Failed to post comment: ${response.statusCode}');
-          print('Error details: ${response.body}');
         }
       } catch (e) {
         print('Error: $e');
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +109,10 @@ class _CommentPageState extends State<CommentPage> {
               itemBuilder: (context, index) {
                 String content = comments[index]['content'] ?? 'Nội dung bình luận không xác định'; // Default if content is null
                 String username = comments[index]['user']['name'] ?? 'Tên người dùng không xác định';
-                username = utf8.decode(utf8.encode(username));// Default if name is null
+
+                // Đảm bảo mã hóa đúng khi hiển thị tên người dùng
+                username = utf8.decode(utf8.encode(username));
+
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundImage: AssetImage('assets/user.jpg'), // Hình ảnh người dùng
@@ -105,7 +120,6 @@ class _CommentPageState extends State<CommentPage> {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-
                       // Tên người gửi
                       Expanded(
                         child: Text(
@@ -149,3 +163,4 @@ class _CommentPageState extends State<CommentPage> {
     );
   }
 }
+

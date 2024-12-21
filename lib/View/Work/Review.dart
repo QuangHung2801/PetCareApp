@@ -26,12 +26,30 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Future<void> checkIfReviewed() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? reviewed = prefs.getBool('hasReviewed_${widget.appointmentId}');
-    if (reviewed != null && reviewed) {
-      setState(() {
-        hasReviewed = true;
-      });
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? sessionId = prefs.getString('JSESSIONID');
+
+      if (sessionId == null) {
+        throw Exception("Vui lòng đăng nhập lại.");
+      }
+
+      final url = Uri.parse('http://10.0.2.2:8888/api/appointments/check-review/${widget.appointmentId}');
+      final response = await http.get(
+        url,
+        headers: {'Cookie': 'JSESSIONID=$sessionId'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          hasReviewed = data['hasReviewed'];
+        });
+      } else {
+        throw Exception('Không thể kiểm tra trạng thái đánh giá.');
+      }
+    } catch (e) {
+      print("Error: $e");
     }
   }
 

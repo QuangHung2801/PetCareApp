@@ -1,65 +1,65 @@
-🌟 ## Ứng Dụng Chăm Sóc Thú Cưng 🌟
+# 🐾 Ứng Dụng Chăm Sóc Thú Cưng 🐾  
 
-🎯 Mô Tả Dự Án
-Ứng dụng Chăm Sóc Thú Cưng là nền tảng trực tuyến hỗ trợ người dùng quản lý hồ sơ thú cưng, đặt các dịch vụ chăm sóc và khám chữa bệnh tại phòng khám thú y hoặc dịch vụ tại nhà. Đồng thời, ứng dụng cũng cung cấp một cộng đồng thú cưng năng động để người dùng chia sẻ bài viết, tương tác qua lượt thích và bình luận.
+Ứng dụng Chăm Sóc Thú Cưng là nền tảng trực tuyến hỗ trợ người dùng quản lý hồ sơ thú cưng, đặt các dịch vụ chăm sóc và khám chữa bệnh tại phòng khám thú y hoặc dịch vụ tại nhà. Đồng thời, ứng dụng cung cấp một cộng đồng thú cưng năng động để người dùng chia sẻ bài viết, tương tác qua lượt thích và bình luận.  
 
+---
 
-🚀 Tính Năng Chính
-Đăng nhập/Đăng ký: Hỗ trợ đăng nhập và đăng ký dễ dàng qua tài khoản.
-Quản lý hồ sơ thú cưng: Người dùng có thể thêm, cập nhật, và quản lý thông tin hồ sơ thú cưng của mình.
-Đặt dịch vụ thú y: Tìm kiếm và đặt lịch khám thú y hoặc dịch vụ chăm sóc thú cưng gần nhà.
-Đăng ký đối tác: Cho phép phòng khám hoặc nhà cung cấp dịch vụ đăng ký để tham gia hệ thống.
-Cộng đồng thú cưng: Người dùng có thể đăng bài viết, thích và bình luận để tương tác với những người yêu thú cưng khác.
+## 🎯 **Mô Tả Dự Án**  
+- Quản lý hồ sơ thú cưng: Thêm, cập nhật, và quản lý thông tin thú cưng.  
+- Đặt lịch dịch vụ thú y: Dễ dàng tìm kiếm và đặt lịch khám gần nhà.  
+- Đăng ký đối tác: Cho phép phòng khám hoặc nhà cung cấp dịch vụ tham gia hệ thống.  
+- Cộng đồng thú cưng: Người dùng có thể chia sẻ bài viết, thích, và bình luận với những người yêu thú cưng khác.  
 
+---
 
-⚙️ Công Nghệ Sử Dụng
-Backend:
-Spring Boot: Framework chính để phát triển API và xử lý logic nghiệp vụ.
-MySQL: Cơ sở dữ liệu để lưu trữ thông tin người dùng, thú cưng, và giao dịch.
-Session: Quản lý trạng thái người dùng, lưu thông tin đăng nhập vào HttpSession trên server.
-Frontend:
-Flutter: Công nghệ phát triển giao diện ứng dụng đa nền tảng (iOS và Android).
-API và Tích Hợp:
-Google Maps API: Xác định vị trí và tìm kiếm dịch vụ gần nhà.
-Push Notifications: Thông báo cập nhật trạng thái dịch vụ hoặc thông tin cộng đồng.
+## 🚀 **Tính Năng Chính**  
+- **Đăng nhập/Đăng ký:** Sử dụng Session để quản lý phiên làm việc và lưu trạng thái trong Shared Preferences (Flutter).  
+- **Quản lý hồ sơ thú cưng:** Tạo, đọc, sửa, xóa thông tin thú cưng.  
+- **Đặt lịch dịch vụ:** Tìm kiếm và đặt lịch dịch vụ thú y hoặc chăm sóc thú cưng tại nhà.  
+- **Cộng đồng thú cưng:** Đăng bài, bình luận, và tương tác với cộng đồng yêu thú cưng.   
+- **Hỗ trợ một số ngôn ngữ:** Tiếng Việt, Tiếng Anh.  
 
-📋 Chức Năng CRUD
-Quản lý hồ sơ thú cưng: Thêm, sửa, xóa thông tin thú cưng.
-Quản lý bài viết cộng đồng: Tạo, đọc, sửa, xóa bài viết và quản lý bình luận.
-Quản lý đối tác: Thêm, phê duyệt, hoặc xóa tài khoản đối tác cung cấp dịch vụ.
+---
 
-💳 Đặt Lịch và Thanh Toán
-Đặt dịch vụ: Người dùng có thể đặt dịch vụ phòng khám hoặc chăm sóc tại nhà theo vị trí gần nhất.
-Thanh toán: Hỗ trợ các phương thức thanh toán qua ví điện tử hoặc tiền mặt.
+## ⚙️ **Công Nghệ Sử Dụng**  
 
-🌍 Hỗ Trợ Đa Ngôn Ngữ
-Hệ thống hỗ trợ nhiều ngôn ngữ như Tiếng Việt và Tiếng Anh để đáp ứng nhu cầu của nhiều đối tượng người dùng.
+### **Backend:**  
+- **Spring Boot:** Framework chính để phát triển API và xử lý logic nghiệp vụ.  
+- **MySQL:** Cơ sở dữ liệu lưu trữ thông tin người dùng, thú cưng, và giao dịch.  
+- **Session:** Quản lý trạng thái đăng nhập người dùng trên server.  
 
-🛠️ Cài Đặt và Chạy Dự Án
-Yêu Cầu Hệ Thống:
-Flutter SDK
-JDK 17+
-Spring Boot 3.0+
-MySQL 8.0+
-Các Bước Cài Đặt:
+### **Frontend:**  
+- **Flutter:** Phát triển giao diện ứng dụng đa nền tảng (iOS, Android).  
+- **Shared Preferences:** Lưu trạng thái đăng nhập cục bộ trên thiết bị.  
 
-Clone repository:
-git clone https://github.com/QuangHung2801/PetCareApp.git  
-Cài đặt Backend:
+### **API và Tích Hợp:**  
+- **Google Maps API:** Tìm kiếm dịch vụ thú y gần nhà.  
+- **Push Notifications:** Thông báo cập nhật trạng thái dịch vụ.  
 
-Import dự án Spring Boot vào IDE.
-Tạo database MySQL và cập nhật thông tin trong application.properties.
-Chạy ứng dụng Spring Boot.
-Cài đặt Frontend:
+---
 
-Mở thư mục Flutter trong IDE như Android Studio hoặc Visual Studio Code.
-Cài đặt các dependency:
-bash
+## 📋 **Chức Năng CRUD**  
+- **Hồ sơ thú cưng:** Tạo, đọc, sửa, và xóa thông tin thú cưng.  
+- **Bài viết cộng đồng:** Quản lý bài viết, lượt thích, và bình luận.  
+- **Đối tác:** Quản lý tài khoản đối tác cung cấp dịch vụ.  
 
-flutter pub get  
-Chạy ứng dụng trên thiết bị hoặc trình giả lập:
+---
 
-flutter run  
-🌟 Trải Nghiệm Dự Án
-Giao diện đơn giản, thân thiện với người dùng.
-Chức năng tiện ích, phù hợp với nhu cầu chăm sóc thú cưng hiện đại.
+## 💳 **Đặt Lịch**  
+- **Đặt dịch vụ:** Lựa chọn phòng khám hoặc dịch vụ gần nhà.  
+
+---
+
+## 🛠️ **Cài Đặt và Chạy Dự Án**  
+
+### **Yêu Cầu Hệ Thống:**  
+- **Flutter SDK**  
+- **JDK 17+**  
+- **Spring Boot 3.0+**  
+- **MySQL 8.0+**  
+
+### **Hướng Dẫn Cài Đặt:**  
+
+1. **Clone repository:**  
+   ```bash
+   git clone https://github.com/QuangHung2801/PetCareApp.git

@@ -33,8 +33,8 @@
 - **Shared Preferences:** Lưu trạng thái đăng nhập cục bộ trên thiết bị.  
 
 ### **API và Tích Hợp:**  
-- **Google Maps API:** Tìm kiếm dịch vụ thú y gần nhà.  
-- **Push Notifications:** Thông báo cập nhật trạng thái dịch vụ.  
+**Geolocator**: Dùng để xác định tọa độ khách hàng và chuyển đổi địa chỉ đối tác thành kinh độ và vĩ độ.
+**Hiển thị trạng thái xác nhận**: Hiển thị trạng thái xác nhận của dịch vụ trên giao diện, không sử dụng thông báo đẩy.
 
 ---
 
@@ -63,3 +63,14 @@
 1. **Clone repository:**  
    ```bash
    git clone https://github.com/QuangHung2801/PetCareApp.git
+
+2. **Cài đặt các phụ thuộc:**
+```
+flutter pub get
+```
+3. **Cài đặt Flutter SDK:**
+Đảm bảo bạn đã cài đặt Flutter. Nếu chưa, truy cập Flutter Installation Guide.
+4. **Chạy ứng dụng Flutter trên thiết bị/emulator**
+```
+flutter run
+```

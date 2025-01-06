@@ -1,18 +1,22 @@
 package com.example.pet_app_service.controller;
 
 import com.example.pet_app_service.entity.PartnerInfo;
+import com.example.pet_app_service.entity.PartnerService;
 import com.example.pet_app_service.entity.Role;
 import com.example.pet_app_service.entity.User;
 import com.example.pet_app_service.repository.PartnerInfoRepository;
+import com.example.pet_app_service.repository.PartnerServiceRepository;
 import com.example.pet_app_service.repository.RoleRepository;
 import com.example.pet_app_service.service.PartnerInfoService;
 import com.example.pet_app_service.repository.UserRepository;
 import com.example.pet_app_service.service.PartnerSearchService;
 import com.example.pet_app_service.service.ServiceType;
 import com.example.pet_app_service.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,7 +46,13 @@ public class PartnerInfoController {
     private PartnerSearchService partnerSearchService;
 
     @Autowired
+    private PartnerInfoService partnerService;
+
+    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PartnerServiceRepository partnerServiceRepository;
 
     @Autowired
     private PartnerInfoRepository partnerInfoRepository;
@@ -58,10 +68,11 @@ public class PartnerInfoController {
             @RequestParam("openingTime") @DateTimeFormat(pattern = "HH:mm") LocalTime openingTime,
             @RequestParam("closingTime") @DateTimeFormat(pattern = "HH:mm") LocalTime closingTime,
             @RequestParam String serviceCategory,
-            @RequestParam String services) { // Chuyển 'services' thành tham số hợp lệ
+            @RequestParam String services,
+            @RequestParam String servicePrices) { // Chuyển 'services' thành tham số hợp lệ
 
         Set<String> selectedServices = new HashSet<>(Arrays.asList(services.split(",")));
-
+        Map<String, Double> servicePriceMap = parseServicePrices(servicePrices);
         // Chuyển đổi serviceCategory sang enum
         PartnerInfo.ServiceCategory category;
         try {
@@ -98,6 +109,28 @@ public class PartnerInfoController {
                 return ResponseEntity.badRequest().body("Invalid service selected: " + service);
             }
         }
+
+        Set<PartnerService> partnerServices = new HashSet<>();
+        for (String service : selectedServices) {
+            try {
+                ServiceType serviceType = ServiceType.valueOf(service);
+                Double price = servicePriceMap.get(service);
+
+                if (price == null) {
+                    return ResponseEntity.badRequest().body("Price for service " + service + " is missing.");
+                }
+
+                PartnerService partnerService = new PartnerService();
+                partnerService.setServiceType(serviceType);
+                partnerService.setPrice(price);
+                partnerService.setPartner(partnerInfo);
+                partnerServices.add(partnerService);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid service selected: " + service);
+            }
+        }
+
+        partnerInfo.setPartnerServices(partnerServices);
         System.out.println("Danh sách dịch vụ sẽ được lưu:");
         for (ServiceType service : serviceSet) {
             System.out.println(service);
@@ -111,10 +144,35 @@ public class PartnerInfoController {
             partnerInfo.setImageUrl(imageUrl);
         }
 
-        // Lưu đối tác vào cơ sở dữ liệu
         PartnerInfo registeredPartner = partnerInfoService.registerPartner(partnerInfo);
-
         return ResponseEntity.ok("Registration submitted. Waiting for approval.");
+    }
+
+    // Phương thức để phân tích giá dịch vụ từ chuỗi servicePrices
+    private Map<String, Double> parseServicePrices(String servicePrices) {
+        Map<String, Double> servicePriceMap = new HashMap<>();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            // Phân tích chuỗi JSON thành Map<String, String>
+            Map<String, String> priceMap = objectMapper.readValue(servicePrices, Map.class);
+
+            // Chuyển đổi các giá trị từ String sang Double
+            for (Map.Entry<String, String> entry : priceMap.entrySet()) {
+                String service = entry.getKey();
+                String priceStr = entry.getValue();
+                try {
+                    Double priceValue = Double.valueOf(priceStr); // Ép kiểu String thành Double
+                    servicePriceMap.put(service, priceValue);
+                } catch (NumberFormatException e) {
+                    // Nếu không thể chuyển đổi giá trị thành Double, bỏ qua hoặc xử lý lỗi
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            // Xử lý lỗi phân tích JSON
+            e.printStackTrace();
+        }
+        return servicePriceMap;
     }
 
     @PutMapping("/approve/{id}")
@@ -173,6 +231,21 @@ public class PartnerInfoController {
         return ResponseEntity.ok(pendingPartners);
     }
 
+    @GetMapping("/status/pending")
+    public ResponseEntity<?> getPending() {
+        List<PartnerInfo> pendingPartners = partnerInfoService.getPendingPartners();
+        List<Map<String, Object>> responseList = new ArrayList<>();
+        for (PartnerInfo partner : pendingPartners) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("userId", partner.getUser().getId());  // Bao gồm userId trong response
+            response.put("businessName", partner.getBusinessName());
+            response.put("status", partner.getStatus());
+            // Các trường khác...
+            responseList.add(response);
+        }
+        return ResponseEntity.ok(responseList);
+    }
+
     private String saveImage(MultipartFile image) {
         try {
             String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
@@ -209,7 +282,7 @@ public class PartnerInfoController {
                     response.put("email", user.getEmail());
                     response.put("imageUrl", partnerInfo.getImageUrl());
                     response.put("serviceCategory", partnerInfo.getServiceCategory());
-                    response.put("services", partnerInfo.getServices());
+                    response.put("services", getServiceDetails(partnerInfo));
 
                     return ResponseEntity.ok(response);  // Trả về thông tin trong Map
                 } else {
@@ -224,7 +297,18 @@ public class PartnerInfoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+    private List<Map<String, Object>> getServiceDetails(PartnerInfo partnerInfo) {
+        List<Map<String, Object>> services = new ArrayList<>();
 
+        for (PartnerService partnerService : partnerInfo.getPartnerServices()) {
+            Map<String, Object> service = new HashMap<>();
+            service.put("serviceCode", partnerService.getServiceType());
+            service.put("price", partnerService.getPrice());
+            services.add(service);
+        }
+
+        return services;
+    }
     // API cập nhật thông tin đối tác
     @PutMapping("/{id}")
     public ResponseEntity<PartnerInfo> updatePartnerInfo(@PathVariable Long id, @RequestBody PartnerInfo partnerInfo) {
@@ -255,18 +339,52 @@ public class PartnerInfoController {
         user.setPhone((String) updates.get("phone"));
         user.setEmail((String) updates.get("email"));
 
-        // Cập nhật các dịch vụ
-        Set<ServiceType> services = new HashSet<>();
-        ((List<String>) updates.get("services")).forEach(service -> {
-            services.add(ServiceType.valueOf(service));
-        });
-        partnerInfo.setServices(services);
+        // Cập nhật các dịch vụ và giá tiền
+        List<Map<String, Object>> serviceUpdates = (List<Map<String, Object>>) updates.get("services");
+
+        if (serviceUpdates != null) {
+            // Danh sách mã dịch vụ gửi từ frontend
+            List<String> updatedServiceCodes = serviceUpdates.stream()
+                    .map(service -> (String) service.get("serviceCode"))
+                    .toList();
+
+            // Xóa các dịch vụ không có trong danh sách mới
+            List<PartnerService> existingServices = partnerServiceRepository.findByPartner(partnerInfo);
+            for (PartnerService existingService : existingServices) {
+                if (!updatedServiceCodes.contains(existingService.getServiceType().name())) {
+                    partnerServiceRepository.delete(existingService); // Xóa dịch vụ
+                }
+            }
+            // Cập nhật hoặc tạo mới các dịch vụ với giá trị mới
+            for (Map<String, Object> serviceUpdate : serviceUpdates) {
+                String serviceCode = (String) serviceUpdate.get("serviceCode");
+                Double price = serviceUpdate.get("price") != null ? Double.valueOf(serviceUpdate.get("price").toString()) : 0.0;
+
+
+
+                // Tìm dịch vụ tương ứng trong bảng PartnerService
+                Optional<PartnerService> existingService = partnerServiceRepository.findByPartnerAndServiceType(partnerInfo, ServiceType.valueOf(serviceCode));
+                if (existingService.isPresent()) {
+                    PartnerService partnerService = existingService.get();
+                    partnerService.setPrice(price);
+                    partnerServiceRepository.save(partnerService);
+                } else {
+                    // Nếu dịch vụ chưa tồn tại, tạo mới và lưu vào bảng PartnerService
+                    PartnerService partnerService = new PartnerService();
+                    partnerService.setPartner(partnerInfo);
+                    partnerService.setServiceType(ServiceType.valueOf(serviceCode));
+                    partnerService.setPrice(price);
+                    partnerServiceRepository.save(partnerService);
+                }
+            }
+        }
 
         userRepository.save(user);
         partnerInfoService.updatePartnerInfo(partnerInfo.getId(), partnerInfo);
 
         return ResponseEntity.ok().build();
     }
+
 
     @GetMapping("/nearby")
     public ResponseEntity<List<PartnerInfo>> findNearbyPartners(

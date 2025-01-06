@@ -61,6 +61,10 @@ public class PartnerInfo {
         }
     }
 
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    private Set<PartnerService> partnerServices = new HashSet<>();
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ServiceCategory serviceCategory; // Loại dịch vụ
@@ -125,6 +129,13 @@ public class PartnerInfo {
         this.isOpen = isOpen;
     }
 
+    public User getUser() { // Chỉnh sửa: getter trả về User
+        return user;
+    }
+
+    public void setUser(User user) { // Chỉnh sửa: setter nhận User đối tượng
+        this.user = user;
+    }
     // Phương thức để đối tác đóng cửa dịch vụ sớm
     public void closeServiceEarly() {
         this.isOpen = false;

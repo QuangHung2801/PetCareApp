@@ -14,19 +14,17 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
 
   TextEditingController nameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
-
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
   List<String> allServices = [];
-  List<String> selectedServices = [];
+  List<Map<String, String>> selectedServices = [];
   String imageUrl = "";
   String businessName = "";
   String businessCode = "";
   String businessLicense = "";
   String serviceCategory = ""; // Store the category type (e.g., PET_CARE, VETERINARY_CARE)
 
-  // Cập nhật dịch vụ với enum ServiceType mới
   Map<String, String> serviceTranslation = {
     "Trông giữ thú cưng": "PET_BOARDING",
     "Spa cho thú cưng": "PET_SPA",
@@ -51,13 +49,13 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
 
     final response = await http.get(
       Uri.parse('http://10.0.2.2:8888/api/partner/show/$userId'),
-      headers: {'Content-Type': 'application/json; charset=utf-8'}, // Ensure UTF-8 encoding for the request
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
     );
 
     if (response.statusCode == 200) {
-      print(response.body);  // Print raw response to check data
+      print(response.body);
       try {
-        final data = jsonDecode(utf8.decode(response.bodyBytes)); // Decode response using UTF-8
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
         setState(() {
           businessName = data['businessName'] ?? "Thông tin không có sẵn";
           businessCode = data['businessCode'] ?? "Thông tin không có sẵn";
@@ -69,18 +67,20 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
 
           serviceCategory = data['serviceCategory'] ?? "Không xác định";
 
-          // Cập nhật selectedServices từ API, chuyển mã dịch vụ thành tên dịch vụ
           selectedServices = data['services'] != null
-              ? List<String>.from(data['services'].map((serviceCode) {
-            return serviceTranslation.keys.firstWhere(
-                  (key) => serviceTranslation[key] == serviceCode,
-              orElse: () => serviceCode, // Trả về mã dịch vụ nếu không tìm thấy dịch vụ tương ứng
-            );
-          }))
+              ? List<Map<String, String>>.from(
+            data['services'].map((service) {
+              return {
+                "name": serviceTranslation.keys.firstWhere(
+                      (key) => serviceTranslation[key] == service['serviceCode'],
+                  orElse: () => service['serviceCode'],
+                ),
+                "price": service['price']?.toString() ?? "Chưa cập nhật",
+              };
+            }).toList(),
+          )
               : [];
 
-
-          // Cập nhật danh sách dịch vụ theo loại dịch vụ
           if (serviceCategory == "PET_CARE") {
             allServices = [
               "Trông giữ thú cưng", "Spa cho thú cưng", "Tắm và cắt tỉa lông", "Dắt thú cưng đi dạo"
@@ -103,10 +103,13 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
   Future<void> updatePartnerInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
+    print('$userId');
 
-    // Đảm bảo các dịch vụ được ánh xạ đúng với giá trị enum
-    List<String> serviceCodes = selectedServices.map((serviceName) {
-      return serviceTranslation[serviceName] ?? serviceName; // Nếu không có ánh xạ thì dùng tên gốc
+    List<Map<String, String?>> serviceCodes = selectedServices.map((service) {
+      return {
+        'serviceCode': serviceTranslation[service['name']] ?? service['name'],
+        'price': service['price'],
+      };
     }).toList();
 
     final response = await http.put(
@@ -199,33 +202,69 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Registered Services",
+            "All Services",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
           Column(
-            children: allServices.map((service) {
-              return CheckboxListTile(
-                title: Text(service),
-                value: selectedServices.contains(service),
-                onChanged: (bool? value) {
-                  setState(() {
-                    if (value == true) {
-                      selectedServices.add(service);
-                    } else {
-                      selectedServices.remove(service);
-                    }
-                  });
-                },
+            children: allServices.map((serviceName) {
+              // Kiểm tra xem dịch vụ có trong selectedServices hay không
+              final registeredService = selectedServices.firstWhere(
+                    (service) => service['name'] == serviceName,
+                orElse: () => {},
+              );
+              final isRegistered = registeredService.isNotEmpty;
+              final price = registeredService['price'] ?? "";
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: isRegistered,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            if (value == true) {
+                              // Thêm dịch vụ vào danh sách đăng ký
+                              selectedServices.add({"name": serviceName, "price": "0"});
+                            } else {
+                              // Xóa dịch vụ khỏi danh sách đăng ký
+                              selectedServices.removeWhere((service) => service['name'] == serviceName);
+                            }
+                          });
+                        },
+                      ),
+                      Text(serviceName),
+                    ],
+                  ),
+                  if (isRegistered)
+                    SizedBox(
+                      width: 100,
+                      child: TextField(
+                        controller: TextEditingController(text: price),
+                        decoration: InputDecoration(labelText: "Price"),
+                        onChanged: (newPrice) {
+                          setState(() {
+                            final index = selectedServices.indexWhere(
+                                    (service) => service['name'] == serviceName);
+                            if (index != -1) {
+                              selectedServices[index]['price'] = newPrice;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                ],
               );
             }).toList(),
           ),
           ElevatedButton(
             onPressed: () {
               setState(() {
-                isEditingServices = !isEditingServices;
+                isEditingServices = false;
               });
-              updatePartnerInfo(); // Lưu dịch vụ khi nhấn "Save Services"
+              updatePartnerInfo();
             },
             child: Text("Save Services"),
           ),
@@ -246,3 +285,4 @@ class _PartnerProfilePageState extends State<PartnerProfilePage> {
     );
   }
 }
+

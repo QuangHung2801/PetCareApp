@@ -1,13 +1,13 @@
 package com.example.pet_app_service.service;
 
 import com.example.pet_app_service.entity.PartnerInfo;
+import com.example.pet_app_service.entity.PartnerService;
 import com.example.pet_app_service.repository.PartnerInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PartnerInfoService {
@@ -95,6 +95,4 @@ public class PartnerInfoService {
         }
         return false; // Default if partner info not found
     }
-
-
 }

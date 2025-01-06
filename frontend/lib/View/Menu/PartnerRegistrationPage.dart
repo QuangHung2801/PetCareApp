@@ -19,9 +19,11 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
   File? _selectedImage;
   TimeOfDay? openingTime;
   TimeOfDay? closingTime;
+  bool isPending = false;
+  bool isLoading = true;
   List<String> selectedServices = [];
   String selectedCategory = ''; // To store the selected category
-
+  Map<String, String> servicePrices = {};
   bool isVeterinarySelected = false;
   bool isPetCareSelected = false;
   List<String> suggestedAddresses = [];
@@ -67,6 +69,41 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    checkPendingStatus();
+  }
+
+  Future<void> checkPendingStatus() async {
+    final userId = await _getUserId();
+    print("User ID :$userId");
+    if (userId == null) {
+      print("User ID không tồn tại.");
+      return;
+    }
+
+    final uri = Uri.parse("http://10.0.2.2:8888/api/partner/status/pending");
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> pendingPartners = json.decode(response.body);
+      print("Danh sách pendingPartners: $pendingPartners"); // Debug
+      setState(() {
+        isPending = pendingPartners.any((partner) {
+          return partner['userId'].toString() == userId && partner['status'] == 'PENDING';
+        });
+        isLoading = false;
+      });
+      print("isPending: $isPending"); // Debug
+    } else {
+      print("Lỗi khi kiểm tra trạng thái pending: ${response.statusCode}");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   // Hàm chọn thời gian đóng cửa
   Future<void> _selectClosingTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -98,6 +135,9 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
       print("User ID không tồn tại.");
       return;
     }
+
+    print("Service Prices: $servicePrices");
+    print("Encoded servicePrices: ${jsonEncode(servicePrices)}");
     final uri = Uri.parse("http://10.0.2.2:8888/api/partner/register");
     final List<String> selectedServicesList = selectedServices.toList();
     var request = http.MultipartRequest('POST', uri);
@@ -109,7 +149,8 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     request.fields['openingTime'] = _formatTime(openingTime!) ?? '';
     request.fields['closingTime'] = _formatTime(closingTime!) ?? '';
     request.fields['services'] = selectedServicesList.join(',');
-    request.fields['serviceCategory'] = selectedCategory; // Sending selected category
+    request.fields['serviceCategory'] = selectedCategory;
+    request.fields['servicePrices'] = jsonEncode(servicePrices);// Sending selected category
 
     if (_selectedImage != null) {
       request.files.add(
@@ -132,6 +173,8 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     }
   }
 
+
+
   Future<void> getAddressSuggestions(String query) async {
     final url = Uri.parse(
         'https://api.opencagedata.com/geocode/v1/json?q=$query&key=$apiKey&language=vi&countrycode=VN');
@@ -152,12 +195,32 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Đăng ký Partner")),
-      body: SingleChildScrollView(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+      :isPending
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Đăng ký của bạn đang chờ duyệt.",
+              style: TextStyle(fontSize: 18, color: Colors.orange),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Quay lại trang trước
+              },
+              child: Text("Quay lại"),
+            ),
+          ],
+        ),
+      )
+          :SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,22 +305,49 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
               Text("Dịch vụ phòng khám thú y", style: TextStyle(fontWeight: FontWeight.bold)),
               Column(
                 children: veterinaryServices.map((service) {
-                  return ListTile(
-                    title: Text(service['label']!),
-                    leading: Checkbox(
-                      value: selectedServices.contains(service['value']!),
-                      onChanged: (bool? selected) {
-                        setState(() {
-                          if (selected != null) {
-                            if (selected) {
-                              selectedServices.add(service['value']!);
-                            } else {
-                              selectedServices.remove(service['value']!);
-                            }
-                          }
-                        });
-                      },
-                    ),
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                          title: Text(service['label']!),
+                          leading: Checkbox(
+                            value: selectedServices.contains(service['value']!),
+                            onChanged: (bool? selected) {
+                              setState(() {
+                                if (selected != null) {
+                                  if (selected) {
+                                    selectedServices.add(service['value']!);
+                                  } else {
+                                    selectedServices.remove(service['value']!);
+                                    servicePrices.remove(service['value']); // Xóa giá nếu bỏ chọn
+                                  }
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                        child: TextField(
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: "Giá",
+                            hintText: "VNĐ",
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              if (selectedServices.contains(service['value']!)) {
+                                servicePrices[service['value']!] = value; // Cập nhật giá
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 }).toList(),
               ),
@@ -265,22 +355,49 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
               Text("Dịch vụ chăm sóc thú cưng", style: TextStyle(fontWeight: FontWeight.bold)),
               Column(
                 children: petCareServices.map((service) {
-                  return ListTile(
-                    title: Text(service['label']!),
-                    leading: Checkbox(
-                      value: selectedServices.contains(service['value']!),
-                      onChanged: (bool? selected) {
-                        setState(() {
-                          if (selected != null) {
-                            if (selected) {
-                              selectedServices.add(service['value']!);
-                            } else {
-                              selectedServices.remove(service['value']!);
-                            }
-                          }
-                        });
-                      },
-                    ),
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                          title: Text(service['label']!),
+                          leading: Checkbox(
+                            value: selectedServices.contains(service['value']!),
+                            onChanged: (bool? selected) {
+                              setState(() {
+                                if (selected != null) {
+                                  if (selected) {
+                                    selectedServices.add(service['value']!);
+                                  } else {
+                                    selectedServices.remove(service['value']!);
+                                    servicePrices.remove(service['value']); // Xóa giá nếu bỏ chọn
+                                  }
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                        child: TextField(
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: "Giá",
+                            hintText: "VNĐ",
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              if (selectedServices.contains(service['value']!)) {
+                                servicePrices[service['value']!] = value; // Cập nhật giá
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 }).toList(),
               ),

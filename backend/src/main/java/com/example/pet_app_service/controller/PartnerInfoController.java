@@ -188,6 +188,21 @@ public class PartnerInfoController {
         }
     }
 
+    @GetMapping("/status/pending")
+    public ResponseEntity<?> getPending() {
+        List<PartnerInfo> pendingPartners = partnerInfoService.getPendingPartners();
+        List<Map<String, Object>> responseList = new ArrayList<>();
+        for (PartnerInfo partner : pendingPartners) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("userId", partner.getUser().getId());  // Bao gồm userId trong response
+            response.put("businessName", partner.getBusinessName());
+            response.put("status", partner.getStatus());
+            // Các trường khác...
+            responseList.add(response);
+        }
+        return ResponseEntity.ok(responseList);
+    }
+
     @GetMapping("show/{userId}")
     public ResponseEntity<Map<String, Object>> getPartnerInfo(@PathVariable Long userId) {
         try {

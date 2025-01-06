@@ -14,8 +14,8 @@ class CareBookingServiceScreen extends StatefulWidget {
 
 class _BookingServiceScreenState extends State<CareBookingServiceScreen> {
   List<String> availableServices = [];
+  List<String> selectedServices = []; // Lưu các dịch vụ được chọn
   List<Map<String, dynamic>> userPets = [];
-  String? selectedService;
   String? selectedPetId;
   String? partnerId;
   DateTime? appointmentDate;
@@ -73,6 +73,7 @@ class _BookingServiceScreenState extends State<CareBookingServiceScreen> {
       }
     } catch (error) {
       print('Error fetching clinic: $error');
+
     }
   }
 
@@ -133,23 +134,25 @@ class _BookingServiceScreenState extends State<CareBookingServiceScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Chọn dịch vụ:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            DropdownButton<String>(
-              isExpanded: true,
-              value: selectedService,
-              hint: Text('Chọn dịch vụ'),
-              items: availableServices.map((String service) {
-                return DropdownMenuItem<String>(
-                  value: service,
-                  child: Text(service),
+            ListView(
+              shrinkWrap: true,  // Thêm thuộc tính này
+              children: availableServices.map((service) {
+                return CheckboxListTile(
+                  title: Text(service),
+                  value: selectedServices.contains(service),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedServices.add(service);
+                      } else {
+                        selectedServices.remove(service);
+                      }
+                    });
+                  },
                 );
               }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedService = newValue;
-                });
-              },
             ),
-            SizedBox(height: 20),
+            // SizedBox(height: 10),
             Text('Chọn thú cưng:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             DropdownButton<String>(
               isExpanded: true,
@@ -194,7 +197,7 @@ class _BookingServiceScreenState extends State<CareBookingServiceScreen> {
   }
 
   Future<void> placeBooking() async {
-    if (selectedService == null || selectedPetId == null || appointmentDate == null || appointmentTime == null) {
+    if (selectedServices.isEmpty || selectedPetId == null || appointmentDate == null || appointmentTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Vui lòng chọn tất cả các thông tin!')));
       return;
     }
@@ -208,39 +211,53 @@ class _BookingServiceScreenState extends State<CareBookingServiceScreen> {
       DateFormat.jm().parse(appointmentTime!.format(context)),
     );
 
-    // Kiểm tra dịch vụ đã chọn và chuyển đổi theo enum
-    String? serviceEnum = serviceTranslation.entries
-        .firstWhere((entry) => entry.value == selectedService, orElse: () => MapEntry("", ""))
-        .key;
+    final selectedServicesEnum = selectedServices.map((service) {
+      return serviceTranslation.entries
+          .firstWhere((entry) => entry.value == service, orElse: () => MapEntry("", ""))
+          .key;
+    }).toList();
 
-    if (serviceEnum.isEmpty) {
-      print("Dịch vụ không hợp lệ");
+    if (selectedServicesEnum.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Dịch vụ không hợp lệ!')));
       return;
     }
 
-    print('Dịch vụ đã chọn: $serviceEnum');
+    // Kiểm tra giá trị gửi đi
+    print('userId: $userId');
+    print('selectedPetId: $selectedPetId');
+    print('partnerId: $partnerId');
+    print('appointmentDate: $formattedDate');
+    print('appointmentTime: $formattedTime');
+    print('selectedServicesEnum: $selectedServicesEnum');
 
-    final response = await http.post(
-      Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId/$partnerId'),
-      headers: {'Content-Type': 'application/json', 'Cookie': '$sessionid'},
-      body: json.encode({
-        "userId": userId,
-        "petId": selectedPetId,
-        "date": formattedDate,
-        "time": formattedTime,
-        "serviceType": serviceEnum,  // Gửi đúng enum của dịch vụ
-      }),
-    );
 
-    if (response.statusCode == 201) {
-      print("Đặt dịch vụ thành công!");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Đặt dịch vụ thành công!')));
-      Navigator.pop(context);
-    } else {
-      String errorMessage = json.decode(response.body)['message'] ?? 'Đặt dịch vụ thất bại!';
-      print("Lỗi đặt dịch vụ: $errorMessage");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $errorMessage')));
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8888/api/appointments/book/$selectedPetId/$partnerId'),
+        headers: {'Content-Type': 'application/json', 'Cookie': '$sessionid'},
+        body: json.encode({
+          "userId": userId,
+          "petId": selectedPetId,
+          "date": formattedDate,
+          "time": formattedTime,
+          "serviceType": selectedServicesEnum,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Đặt dịch vụ thành công!')));
+        Navigator.pop(context);
+      } else {
+        // Ghi chi tiết lỗi phản hồi từ server
+        String errorMessage = json.decode(response.body)['message'] ?? 'Đặt dịch vụ thất bại!';
+        print('Error response: ${response.body}');
+        print('HTTP Status: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $errorMessage')));
+      }
+    } catch (e) {
+      // Bắt lỗi ngoại lệ và in chi tiết
+      print('Exception: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi ngoại lệ: $e')));
     }
   }
 }

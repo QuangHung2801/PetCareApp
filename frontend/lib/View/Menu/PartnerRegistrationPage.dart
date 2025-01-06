@@ -21,7 +21,8 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
   TimeOfDay? closingTime;
   List<String> selectedServices = [];
   String selectedCategory = ''; // To store the selected category
-
+  bool isPending = false;
+  bool isLoading = true;
   bool isVeterinarySelected = false;
   bool isPetCareSelected = false;
   List<String> suggestedAddresses = [];
@@ -54,6 +55,40 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    checkPendingStatus();
+  }
+
+  Future<void> checkPendingStatus() async {
+    final userId = await _getUserId();
+    print("User ID :$userId");
+    if (userId == null) {
+      print("User ID không tồn tại.");
+      return;
+    }
+
+    final uri = Uri.parse("http://10.0.2.2:8888/api/partner/status/pending");
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> pendingPartners = json.decode(response.body);
+      print("Danh sách pendingPartners: $pendingPartners"); // Debug
+      setState(() {
+        isPending = pendingPartners.any((partner) {
+          return partner['userId'].toString() == userId && partner['status'] == 'PENDING';
+        });
+        isLoading = false;
+      });
+      print("isPending: $isPending"); // Debug
+    } else {
+      print("Lỗi khi kiểm tra trạng thái pending: ${response.statusCode}");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
   // Hàm chọn thời gian mở cửa
   Future<void> _selectOpeningTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -157,7 +192,28 @@ class _PartnerRegistrationFormState extends State<PartnerRegistrationForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Đăng ký Partner")),
-      body: SingleChildScrollView(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          :isPending
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Đăng ký của bạn đang chờ duyệt.",
+              style: TextStyle(fontSize: 18, color: Colors.orange),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Quay lại trang trước
+              },
+              child: Text("Quay lại"),
+            ),
+          ],
+        ),
+      )
+          :SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

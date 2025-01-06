@@ -29,9 +29,11 @@ public class Appointment {
     private String reason;
 
     @NotNull(message = "Dịch vụ không được để trống")
+    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ServiceType serviceType;
+    @CollectionTable(name = "appointment_services", joinColumns = @JoinColumn(name = "appointment_id"))
+    @Column(name = "service_type")
+    private List<ServiceType> serviceTypes;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -97,12 +99,12 @@ public class Appointment {
         this.reason = reason;
     }
 
-    public ServiceType getServiceType() {
-        return serviceType;
+    public List<ServiceType> getServiceType() {
+        return serviceTypes;
     }
 
-    public void setServiceType(ServiceType serviceType) {
-        this.serviceType = serviceType;
+    public void setServiceType(List<ServiceType> serviceTypes) {
+        this.serviceTypes = serviceTypes;
     }
 
     public User getUser() {
